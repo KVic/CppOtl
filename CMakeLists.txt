@@ -5,16 +5,11 @@ cmake_minimum_required(VERSION 3.13...3.14.2)
 
 project(CppOtl CXX)
 
-add_library(${PROJECT_NAME})
+add_library(${PROJECT_NAME} INTERFACE)
 
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(${PROJECT_NAME} INTERFACE include)
 
 set(CppOtl.Include.dir ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-target_include_directories(${PROJECT_NAME} INTERFACE
-    $<BUILD_INTERFACE: ${CppOtl.Include.dir}>)
-
 set(CppOtl.Include.files
     include/otn/access.hpp
     include/otn/all.hpp
@@ -195,5 +190,4 @@ set(CppOtl.Include.files
     include/otn/v1/utility/unique_carrier.hpp
 )
 
-target_sources(${PROJECT_NAME} PRIVATE ${CppOtl.Include.files})
 source_group(TREE ${CppOtl.Include.dir} FILES ${CppOtl.Include.files})
