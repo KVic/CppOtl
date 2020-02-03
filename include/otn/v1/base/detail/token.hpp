@@ -500,7 +500,7 @@ public:
     {
         struct comparer : public token<Y, SpecY>::accessor
         {
-            bool operator()(const referrer_type& a,
+            bool operator()(const token::referrer_type& a,
                             const token<Y, SpecY>& b) const noexcept
             { return a.owner_before((*this).referrer(b)); }
         };
