@@ -73,7 +73,9 @@ Tested with:
 - GCC 9.2.1
 - Clang 9.0.1
 
-Note: it is a known issue that not all compilers can compile SFINAE "magic" from the [`otn/support/concept.hpp`](include/otn/v1/support/concept.hpp).
+Note: It is a known issue that not all compilers can compile SFINAE "magic" from the [`otn/support/concept.hpp`](include/otn/v1/support/concept.hpp).
+
+Note: Try the "feature/Cpp20Concepts" branch if a compiler supports C++20 Concepts.
 
 # Usage
 
