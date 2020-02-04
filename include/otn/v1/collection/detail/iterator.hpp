@@ -29,7 +29,6 @@
 #include <otn/v1/traits/derivative.hpp>
 #include <otn/v1/proxy/factory.hpp>
 #include <otn/v1/support/utilize.hpp>
-#include <otn/v1/support/concept.hpp>
 
 #include <iterator>
 
@@ -62,13 +61,13 @@ public:
 
     iterator() = default;
 
-    OTN_CONCEPT_REQUIRES_(is_optional_v<Token>)
     explicit iterator(Token& token) noexcept
+    requires is_optional_v<Token>
         : m_token{token ? std::addressof(token) : nullptr}
     {}
 
-    OTN_CONCEPT_REQUIRES_(is_single_v<Token>)
     explicit iterator(Token& token) noexcept
+    requires is_single_v<Token>
         : m_token{std::addressof(token)}
     {}
 

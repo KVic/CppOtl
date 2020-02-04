@@ -36,14 +36,14 @@ inline namespace v1
 namespace raw
 {
 
-template <class Token,
-          OTN_CONCEPT_REQUIRES(basis_is_v<Token, basis::raw>)>
+template <class Token>
+requires basis_is_v<Token, basis::raw>
 inline
 collection::iterator<Token> begin(Token& token) noexcept
 { return collection::iterator<Token>{token}; }
 
-template <class Token,
-          OTN_CONCEPT_REQUIRES(basis_is_v<Token, basis::raw>)>
+template <class Token>
+requires basis_is_v<Token, basis::raw>
 constexpr collection::iterator<Token> end(Token&) noexcept
 { return collection::iterator<Token>{}; }
 

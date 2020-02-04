@@ -24,8 +24,6 @@
 
 #pragma once
 
-#include <otn/v1/support/concept.hpp>
-
 #include <stdexcept>
 
 #define OTN_TRACK_UNIQUE_CARRIER_x
@@ -66,10 +64,12 @@ public:
     // operator T && () & = delete;
     operator T && () & { return release(); }
 
-    template <class U, OTN_CONCEPT_REQUIRES(std::is_convertible_v<T, U>)>
+    template <class U>
+    requires(std::is_convertible_v<T, U>)
     operator U() && { return release(); }
 
-    template <class U, OTN_CONCEPT_REQUIRES(std::is_convertible_v<T, U>)>
+    template <class U>
+    requires(std::is_convertible_v<T, U>)
     operator U()& = delete;
 
     auto& operator*()

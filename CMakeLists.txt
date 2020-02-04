@@ -179,7 +179,6 @@ set(CppOtl.Include.files
     include/otn/v1/std_smart/detail/traits.hpp
     include/otn/v1/std_smart/origin.hpp
     include/otn/v1/support/assert.hpp
-    include/otn/v1/support/concept.hpp
     include/otn/v1/support/noexcept.hpp
     include/otn/v1/support/pointer_traits.hpp
     include/otn/v1/support/to_value.hpp

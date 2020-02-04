@@ -26,7 +26,6 @@
 
 #include <otn/v1/proxy/factory.hpp>
 
-#include <otn/v1/support/concept.hpp>
 #include <otn/v1/support/to_value.hpp>
 
 #include <otn/v1/multiplicity/traits.hpp>
@@ -97,12 +96,12 @@ public:
     template <std::size_t Index>
     content_type<Index> get() const&& = delete;
 
-    OTN_CONCEPT_REQUIRES_(proxies_count == 1)
+    // Indirection
     content_type<0> operator*() const & noexcept
+    requires(proxies_count == 1)
     { return get<0>(); }
 
-    OTN_CONCEPT_REQUIRES_(proxies_count > 1)
-    content_type<0> operator*() = delete;
+    content_type<0> operator*() requires(proxies_count > 1) = delete;
     content_type<0> operator*() const&& = delete;
 
 private:

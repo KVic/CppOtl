@@ -30,7 +30,6 @@
 #include <otn/v1/deleter/traits.hpp>
 #include <otn/v1/lifetime/traits.hpp>
 #include <otn/v1/generic/token.hpp>
-#include <otn/v1/support/concept.hpp>
 
 #include <utility>
 
@@ -55,8 +54,8 @@ struct specify_weak
 template <class Token>
 using weak_t = typename specify_weak<Token>::type;
 
-template <class Token,
-          OTN_CONCEPT_REQUIRES(is_token_v<Token>)>
+template <class Token>
+requires is_token_v<Token>
 inline
 auto weak(Token&& token)
 {

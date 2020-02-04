@@ -38,14 +38,14 @@ inline namespace v1
 namespace safe
 {
 
-template <class Token,
-          OTN_CONCEPT_REQUIRES(basis_is_v<Token, basis::safe>)>
+template <class Token>
+requires basis_is_v<Token, basis::safe>
 inline
 collection::iterator<Token> begin(Token& token) noexcept
 { return collection::iterator<Token>{token}; }
 
-template <class Token,
-          OTN_CONCEPT_REQUIRES(basis_is_v<Token, basis::safe>)>
+template <class Token>
+requires basis_is_v<Token, basis::safe>
 constexpr collection::iterator<Token> end(Token&) noexcept
 { return collection::iterator<Token>{}; }
 
