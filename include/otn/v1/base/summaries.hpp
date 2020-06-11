@@ -72,7 +72,15 @@ struct token_kind
     static constexpr bool is_single =
         otn::multiplicity::is_single_v<multiplicity>;
 
-    static constexpr bool is_single_owner = is_single && is_owner;
+    static constexpr bool copy_construction_enabled =
+        conversion::property<conversion::copy_construction,
+                             basis, ownership, multiplicity,
+                             basis, ownership, multiplicity>::is_enabled;
+
+    static constexpr bool move_construction_enabled =
+        conversion::property<conversion::move_construction,
+                             basis, ownership, multiplicity,
+                             basis, ownership, multiplicity>::is_enabled;
 
     template <class Operation, class Token>
     static constexpr bool operation_enabled_from =

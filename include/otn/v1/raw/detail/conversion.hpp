@@ -46,23 +46,61 @@ namespace conversion
 // M - Multiplicity
 
 // ----- copy construction & assignment ----------------------------------------
-// raw::any_any<T> <- raw::any_any<Y>
-template <class TO, class TM,
+// raw::unified_any<T> <- raw::any_any<Y>
+template <class TM,
           class YO, class YM>
 struct
 property<copy_construction,
-         basis::raw, TO, TM,
+         basis::raw, ownership::unified, TM,
          basis::raw, YO, YM> : implicit_enabled {};
+
+// raw::weak_any<T> <- raw::some_any<Y>
+template <class TM,
+          class YM>
+struct
+property<copy_construction,
+         basis::raw, ownership::weak, TM,
+         basis::raw, ownership::unique, YM> : implicit_enabled {};
+
+template <class TM,
+          class YM>
+struct
+property<copy_construction,
+         basis::raw, ownership::weak, TM,
+         basis::raw, ownership::weak, YM> : implicit_enabled {};
 // ----- copy construction & assignment ----------------------------------------
 
 // ----- move construction & assignment ----------------------------------------
-// raw::any_any<T> <- raw::some_any<Y>
-template <class TO, class TM,
-          class YO, class YM>
+// raw::unified_any<T> <- raw::some_any<Y>
+template <class TM,
+          class YM>
 struct
 property<move_construction,
-         basis::raw, TO, TM,
-         basis::raw, YO, YM> : implicit_enabled {};
+         basis::raw, ownership::unified, TM,
+         basis::raw, ownership::unified, YM> : implicit_enabled {};
+
+template <class TM,
+          class YM>
+struct
+property<move_construction,
+         basis::raw, ownership::unified, TM,
+         basis::raw, ownership::weak, YM> : implicit_enabled {};
+
+// raw::unique_any<T> <- raw::unique_any<Y>
+template <class TM,
+          class YM>
+struct
+property<move_construction,
+         basis::raw, ownership::unique, TM,
+         basis::raw, ownership::unique, YM> : implicit_enabled {};
+
+// raw::weak_any<T> <- raw::some_any<Y>
+template <class TM,
+          class YM>
+struct
+property<move_construction,
+         basis::raw, ownership::weak, TM,
+         basis::raw, ownership::weak, YM> : implicit_enabled {};
 // ----- move construction & assignment ----------------------------------------
 
 } // namespace conversion

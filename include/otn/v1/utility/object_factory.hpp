@@ -38,30 +38,25 @@ inline namespace v1
 namespace internal
 {
 
-template <typename Object, typename Proxy, std::size_t... Indices>
-constexpr Object make_object(const Proxy& proxy, std::index_sequence<Indices...>)
+template <typename Object, typename ProxyList, std::size_t... Indices>
+constexpr Object make_object(const ProxyList& proxy_list,
+                             std::index_sequence<Indices...>)
 {
+    auto values = *proxy_list;
+    using Values = decltype (values);
     using std::get;
-    return Object{get<Indices>(proxy)...};
+    return Object{std::forward<std::tuple_element_t<Indices, Values>>(
+                      get<Indices>(values))...};
 }
 
 } // namespace internal
-
-// TODO: Use make_index_sequence in template parameter.
-
-template <typename Object, typename Proxy>
-constexpr Object make_object(const Proxy& proxy)
-{
-    return internal::make_object<Object>(
-        proxy,
-        std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Proxy>>>{});
-}
 
 template <typename Object, class ... Tokens>
 constexpr std::optional<Object> try_make_object(Tokens&& ... tokens)
 {
     if (auto locs = gain(std::forward<Tokens>(tokens)...))
-        return make_object<Object>(locs);
+        return internal::make_object<Object>(
+            locs, std::make_index_sequence<sizeof... (Tokens)>{});
 
     return {};
 }

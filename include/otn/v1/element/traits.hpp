@@ -48,6 +48,24 @@ template <class Token, class Element>
 inline constexpr bool element_is_v =
     std::is_same_v<traits::element_t<Token>, Element>;
 
+template <class From, class To>
+static constexpr bool is_elements_convertible =
+    std::is_convertible_v<std::remove_reference_t<From>*,
+                          std::remove_reference_t<To>*>;
+
+template <class This, class With>
+static constexpr bool is_elements_incompatible =
+    !is_elements_convertible<std::remove_const_t<With>,
+                             std::remove_const_t<This>>;
+
+// Const incorrectness conversion: 'const With* -> This*'.
+template <class This, class With>
+static constexpr bool is_elements_const_incorrect =
+    std::is_const_v<With>
+    && !std::is_const_v<This>
+    && is_elements_convertible<std::remove_const_t<With>,
+                               std::remove_const_t<This>>;
+
 } // namespace v1
 
 } // namespace otn

@@ -28,6 +28,8 @@
 #include <otn/v1/cpp_lang/detail/concrete.hpp>
 #include <otn/v1/cpp_lang/detail/comparison.hpp>
 #include <otn/v1/cpp_lang/detail/swap.hpp>
+#include <otn/v1/cpp_lang/detail/range_access.hpp>
 #include <otn/v1/cpp_lang/detail/hash.hpp>
 #include <otn/v1/cpp_lang/detail/traits.hpp>
 #include <otn/v1/cpp_lang/detail/pointer_traits.hpp>
+#include <otn/v1/cpp_lang/detail/referrer.hpp>

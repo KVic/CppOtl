@@ -30,6 +30,7 @@
 #include <otn/v1/multiplicity/traits.hpp>
 #include <otn/v1/lifetime/traits.hpp>
 #include <otn/v1/lifetime/detector.hpp>
+#include <otn/v1/layout/traits.hpp>
 
 #include <otn/v1/cpp_lang/origin.hpp>
 #include <otn/v1/cpp_lang/basis.hpp>
@@ -62,6 +63,10 @@ template <class T>
 struct multiplicity<cpp_lang::unified_unknown<T>>
 { using type = otn::multiplicity::unknown; };
 
+template <class T>
+struct layout<cpp_lang::unified_unknown<T>>
+{ using type = otn::layout::divided; };
+
 // unified_optional
 template <class T>
 struct element<cpp_lang::unified_optional<T>>
@@ -78,6 +83,60 @@ struct ownership<cpp_lang::unified_optional<T>>
 template <class T>
 struct multiplicity<cpp_lang::unified_optional<T>>
 { using type = otn::multiplicity::optional; };
+
+template <class T>
+struct layout<cpp_lang::unified_optional<T>>
+{ using type = otn::layout::divided; };
+
+// thin_optional
+template <class T>
+struct element<cpp_lang::thin_optional<T>>
+{ using type = T; };
+
+template <class T>
+struct basis<cpp_lang::thin_optional<T>>
+{ using type = otn::basis::cpp_lang; };
+
+template <class T>
+struct ownership<cpp_lang::thin_optional<T>>
+{ using type = otn::ownership::unique; };
+
+template <class T>
+struct multiplicity<cpp_lang::thin_optional<T>>
+{ using type = otn::multiplicity::optional; };
+
+template <class T>
+struct deleter<cpp_lang::thin_optional<T>>
+{ using type = otn::deleter::by_default; };
+
+template <class T>
+struct layout<cpp_lang::thin_optional<T>>
+{ using type = otn::layout::united; };
+
+// thin_single
+template <class T>
+struct element<cpp_lang::thin_single<T>>
+{ using type = T; };
+
+template <class T>
+struct basis<cpp_lang::thin_single<T>>
+{ using type = otn::basis::cpp_lang; };
+
+template <class T>
+struct ownership<cpp_lang::thin_single<T>>
+{ using type = otn::ownership::unique; };
+
+template <class T>
+struct multiplicity<cpp_lang::thin_single<T>>
+{ using type = otn::multiplicity::single; };
+
+template <class T>
+struct deleter<cpp_lang::thin_single<T>>
+{ using type = otn::deleter::by_default; };
+
+template <class T>
+struct layout<cpp_lang::thin_single<T>>
+{ using type = otn::layout::united; };
 
 namespace lifetime
 {

@@ -25,7 +25,7 @@ Tokens from CppOtl are integrated with smart pointers from the C++ standard libr
 
 All CppOtl entities are located in the `otn` namespace. **`otn`** is an abbreviation for **o**bject **t**oke**n**.
 
-- [`safe`](doc/en/Characteristics.md#Safe) tokens provide an object's lifetime safety and can not be *dangling*.
+* [`safe`](doc/en/Characteristics.md#Safe) tokens provide an object's lifetime safety and can not be *dangling*.
 
    |Name|Description|
    |---|---|
@@ -37,17 +37,19 @@ All CppOtl entities are located in the `otn` namespace. **`otn`** is an abbrevia
    |`safe::unified[_single]<T>`|A unified single carrier and accessor of an object linked with `safe` tokens.|
    |`safe::unified_optional<T>`|A unified optional carrier and accessor of an object linked with `safe` tokens.|
 
-- [`slim`](doc/en/Characteristics.md#Slim) tokens are lightweight with minimum runtime overhead.
+* [`slim`](doc/en/Characteristics.md#Slim) tokens are lightweight with minimum runtime overhead.
 
    |Name|Description|
    |---|---|
    |`slim::unique[_single]<T, D>`|A unique single owner of an object.|
    |`slim::unique_optional<T, D>`|A unique optional owner of an object.|
 
-- [`raw`](doc/en/Characteristics.md#Raw) tokens are close to raw C++ pointers.
+* [`raw`](doc/en/Characteristics.md#Raw) tokens are close to raw C++ objects and pointers.
 
    |Name|Description|
    |---|---|
+   |`raw::unique[_single]<T>`|A unique single owner of an object.|
+   |`raw::unique_optional<T>`|A unique optional owner of an object.|
    |`raw::weak[_single]<T>`|A single observer of an object.|
    |`raw::weak_optional<T>`|An optional observer of an object.|
    |`raw::unified[_single]<T>`|A unified single carrier and accessor of an object.|
@@ -57,12 +59,12 @@ Using `otn` tokens is similar to using smart pointers from the C++ standard libr
 
 # Reference
 
-- [Characteristics](doc/en/Characteristics.md)
-- [Synopsis](doc/en/Synopsis.md)
-- [Construction](doc/en/Construction.md)
-- [Access](doc/en/Access.md)
-- [Traits](doc/en/Traits.md)
-- [UML relations](doc/en/UML_Relations.md)
+* [Characteristics](doc/en/Characteristics.md)
+* [Synopsis](doc/en/Synopsis.md)
+* [Construction](doc/en/Construction.md)
+* [Access](doc/en/Access.md)
+* [Traits](doc/en/Traits.md)
+* [UML relations](doc/en/UML_Relations.md)
 
 # Requirements
 
@@ -70,12 +72,10 @@ C++17 compiler.
 
 Tested with:
 
-- GCC 9.2.1
-- Clang 9.0.1
+* GCC 9.2.1
+* Clang 9.0.1
 
-Note: It is a known issue that not all compilers can compile SFINAE "magic" from the [`otn/support/concept.hpp`](include/otn/v1/support/concept.hpp).
-
-Note: Try the "feature/Cpp20Concepts" branch if a compiler supports C++20 Concepts.
+Note: It is a known issue that not all compilers can compile SFINAE "magic" from the [`otn/support/concept.hpp`](include/otn/v1/support/concept.hpp). Use C++20 standard in this case, if a compiler supports C++20 Concepts.
 
 # Usage
 

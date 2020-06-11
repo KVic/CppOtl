@@ -46,7 +46,7 @@ namespace conversion
 // M - Multiplicity
 
 // ----- copy construction & assignment ----------------------------------------
-// safe::unified_some<T> <- safe::some_any<Y>
+// safe::unified_some<T> <- safe::any_some<Y>
 template <class TM,
           class YM>
 struct
@@ -82,13 +82,27 @@ property<copy_construction,
          basis::safe, ownership::shared, TM,
          basis::safe, ownership::shared, YM> : implicit_enabled {};
 
-// safe::weak_any<T> <- safe::any_any<Y>
+// safe::weak_any<T> <- safe::some_any<Y>
 template <class TM,
-          class YO, class YM>
+          class YM>
 struct
 property<copy_construction,
          basis::safe, ownership::weak, TM,
-         basis::safe, YO, YM> : implicit_enabled {};
+         basis::safe, ownership::unique, YM> : implicit_enabled {};
+
+template <class TM,
+          class YM>
+struct
+property<copy_construction,
+         basis::safe, ownership::weak, TM,
+         basis::safe, ownership::shared, YM> : implicit_enabled {};
+
+template <class TM,
+          class YM>
+struct
+property<copy_construction,
+         basis::safe, ownership::weak, TM,
+         basis::safe, ownership::weak, YM> : implicit_enabled {};
 // ----- copy construction & assignment ----------------------------------------
 
 // ----- move construction & assignment ----------------------------------------

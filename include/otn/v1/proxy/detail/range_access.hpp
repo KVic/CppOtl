@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <otn/v1/proxy/detail/list_iterator.hpp>
+#include <otn/v1/proxy/detail/iterator.hpp>
 
 namespace otn
 {
@@ -37,21 +37,21 @@ namespace proxy
 
 template <class ... Tokens>
 inline
-list_iterator<Tokens...> begin(list<Tokens...>& proxies) noexcept
-{ return list_iterator<Tokens...>{proxies}; }
+iterator<list<Tokens...>> begin(list<Tokens...>& proxies) noexcept
+{ return iterator<list<Tokens...>>{proxies}; }
 
 template <class ... Tokens>
 inline
-list_iterator<Tokens...> begin(const list<Tokens...>& proxies) noexcept
-{ return list_iterator<Tokens...>{proxies}; }
+iterator<list<Tokens...>> begin(const list<Tokens...>& proxies) noexcept
+{ return iterator<list<Tokens...>>{proxies}; }
 
 template <class ... Tokens>
-constexpr list_iterator<Tokens...> end(list<Tokens...>&) noexcept
-{ return list_iterator<Tokens...>{}; }
+constexpr iterator<list<Tokens...>> end(list<Tokens...>&) noexcept
+{ return iterator<list<Tokens...>>{}; }
 
 template <class ... Tokens>
-constexpr list_iterator<Tokens...> end(const list<Tokens...>&) noexcept
-{ return list_iterator<Tokens...>{}; }
+constexpr iterator<list<Tokens...>> end(const list<Tokens...>&) noexcept
+{ return iterator<list<Tokens...>>{}; }
 
 } // namespace proxy
 

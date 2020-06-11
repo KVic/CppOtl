@@ -96,7 +96,7 @@ public:
         return *this;
     }
 
-    // Conversion operators
+    // Conversion functions
     constexpr operator T*() const & noexcept { return m_referrer; }
     constexpr operator T*() && noexcept
     {
@@ -106,16 +106,18 @@ public:
     }
 
     // Observers
-    constexpr T& operator*() const noexcept  { return *m_referrer; }
+    [[nodiscard]]
+    constexpr T& operator*() const noexcept { return *m_referrer; }
+
+    [[nodiscard]]
     constexpr T* operator->() const noexcept { return m_referrer; }
 
+    [[nodiscard]]
+    constexpr explicit operator bool() const & noexcept
+    { return static_cast<bool>(m_referrer); }
+    operator bool() && = delete;
+
     // Modifiers
-    void reset() noexcept { m_referrer = nullptr; }
-    void reset(std::nullptr_t) noexcept { reset(); }
-
-    template <class Y, class = is_compatible_t<Y>>
-    void reset(Y* p) noexcept { m_referrer = p; }
-
     void swap(unified_optional& other) noexcept
     {
         using std::swap;

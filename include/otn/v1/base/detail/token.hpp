@@ -24,21 +24,22 @@
 
 #pragma once
 
-#include <otn/v1/base/tags.hpp>
-#include <otn/v1/base/configs.hpp>
-#include <otn/v1/base/summaries.hpp>
-#include <otn/v1/base/factory.hpp>
+#include <otn/v1/config/deprecations.hpp>
+
 #include <otn/v1/base/detail/concepts.hpp>
+#include <otn/v1/base/summaries.hpp>
+#include <otn/v1/base/traits.hpp>
 
 #include <otn/v1/element/traits.hpp>
 
 #include <otn/v1/referrer/summaries.hpp>
 #include <otn/v1/referrer/adaptor.hpp>
 #include <otn/v1/referrer/factory.hpp>
-#include <otn/v1/referrer/tags.hpp>
 
 #include <otn/v1/owner_base/rules.hpp>
 #include <otn/v1/owner_base/traits.hpp>
+
+#include <otn/v1/tag/itself.hpp>
 
 #include <otn/v1/support/assert.hpp>
 #include <otn/v1/support/noexcept.hpp>
@@ -68,33 +69,81 @@ public:
     using element_type = typename referrer_summary::element_type;
 
 protected:
-    using element_summary = typename referrer_summary::element_summary;
+    // Element traits.
+    // NOTE: Disabling element traits can speed up the debug build (~5%).
     template <class Element>
     static constexpr bool is_convertible_from_element =
-        element_summary::template is_convertible_from<Element>;
-    template <class Element>
-    static constexpr bool is_convertible_to_element =
-        element_summary::template is_convertible_to<Element>;
+        is_elements_convertible<Element, element_type>;
     template <class Element>
     static constexpr bool is_incompatible_with_element =
-        element_summary::template is_incompatible_with<Element>;
+        is_elements_incompatible<element_type, Element>;
     template <class Element>
     static constexpr bool is_const_incorrect_with_element =
-        element_summary::template is_const_incorrect_with<Element>;
+        is_elements_const_incorrect<element_type, Element>;
 
     template <class Token>
-    static constexpr bool is_convertible_from =
+    static constexpr bool is_element_convertible_from =
         is_convertible_from_element<otn::traits::element_t<Token>>;
     template <class Token>
-    static constexpr bool is_convertible_to =
-        is_convertible_to_element<otn::traits::element_t<Token>>;
+    static constexpr bool is_element_convertible_to =
+        is_elements_convertible<element_type, otn::traits::element_t<Token>>;
     template <class Token>
-    static constexpr bool is_incompatible_with =
+    static constexpr bool is_element_incompatible_with =
         is_incompatible_with_element<otn::traits::element_t<Token>>;
     template <class Token>
-    static constexpr bool is_const_incorrect_with =
+    static constexpr bool is_element_const_incorrect_with =
         is_const_incorrect_with_element<otn::traits::element_t<Token>>;
 
+    // Referrer traits.
+    // NOTE: Disabling referrer traits can speed up the debug build (~5%).
+    template <class Element, class ... Args>
+    static constexpr bool is_itself_constructible =
+        referrer::factory<referrer_type>::template
+        is_constructible<Element, Args...>;
+    template <class Element, class ... Args>
+    static constexpr bool is_itself_nothrow_constructible =
+        referrer::factory<referrer_type>::template
+        is_nothrow_constructible<Element, Args...>;
+
+    static constexpr bool is_referrer_copy_constructible =
+        referrer::adaptor<referrer_type, referrer_type>::is_copy_constructible;
+
+    static constexpr bool is_referrer_move_constructible =
+        referrer::adaptor<referrer_type, referrer_type>::is_move_constructible;
+
+    static constexpr bool is_referrer_copy_assignable =
+        referrer::adaptor<referrer_type, referrer_type>::is_copy_assignable;
+
+    static constexpr bool is_referrer_move_assignable =
+        referrer::adaptor<referrer_type, referrer_type>::is_move_assignable;
+
+    template <class Token>
+    static constexpr bool is_referrer_constructible_from =
+        std::is_lvalue_reference_v<Token>
+        ? referrer::adaptor<referrer_type,
+                            otn::remove_cvref_t<Token>>::is_copy_constructible
+        : referrer::adaptor<referrer_type,
+                            otn::remove_cvref_t<Token>>::is_move_constructible;
+
+    template <class Token>
+    static constexpr bool is_referrer_assignable_from =
+        std::is_lvalue_reference_v<Token>
+        ? referrer::adaptor<referrer_type,
+                            otn::remove_cvref_t<Token>>::is_copy_assignable
+        : referrer::adaptor<referrer_type,
+                            otn::remove_cvref_t<Token>>::is_move_assignable;
+
+    template <class Token>
+    static constexpr bool is_referrer_copy_convertible_to =
+        referrer::adaptor<otn::remove_cvref_t<Token>,
+                          referrer_type>::is_copy_constructible;
+
+    template <class Token>
+    static constexpr bool is_referrer_move_convertible_to =
+        referrer::adaptor<otn::remove_cvref_t<Token>,
+                          referrer_type>::is_move_constructible;
+
+    // Conversion traits.
     using kind = summaries::token_kind<brief_spec>;
     template <class Token>
     static constexpr bool copy_construction_enabled_from =
@@ -132,38 +181,30 @@ protected:
         kind::template operation_explicit_from<conversion::move_conversion, Token>;
 
     template <class Token>
-    static constexpr bool construction_implicit_enabled_from()
-    {
-        if constexpr (std::is_lvalue_reference_v<Token>)
-            return copy_construction_enabled_from<otn::remove_cvref_t<Token>>
-                   && !copy_construction_explicit_from<otn::remove_cvref_t<Token>>;
-        else
-            return move_construction_enabled_from<otn::remove_cvref_t<Token>>
-                   && !move_construction_explicit_from<otn::remove_cvref_t<Token>>;
-    }
+    static constexpr bool construction_implicit_enabled_from =
+        std::is_lvalue_reference_v<Token>
+        ? (  copy_construction_enabled_from<otn::remove_cvref_t<Token>>
+          && !copy_construction_explicit_from<otn::remove_cvref_t<Token>>)
+        : (  move_construction_enabled_from<otn::remove_cvref_t<Token>>
+          && !move_construction_explicit_from<otn::remove_cvref_t<Token>>);
 
     template <class Token>
-    static constexpr bool construction_explicit_enabled_from()
-    {
-        if constexpr (std::is_lvalue_reference_v<Token>)
-            return copy_construction_enabled_from<otn::remove_cvref_t<Token>>
-                   && copy_construction_explicit_from<otn::remove_cvref_t<Token>>;
-        else
-            return move_construction_enabled_from<otn::remove_cvref_t<Token>>
-                   && move_construction_explicit_from<otn::remove_cvref_t<Token>>;
-    }
+    static constexpr bool construction_explicit_enabled_from =
+        std::is_lvalue_reference_v<Token>
+        ? (  copy_construction_enabled_from<otn::remove_cvref_t<Token>>
+          && copy_construction_explicit_from<otn::remove_cvref_t<Token>>)
+        : (  move_construction_enabled_from<otn::remove_cvref_t<Token>>
+          && move_construction_explicit_from<otn::remove_cvref_t<Token>>);
 
     template <class Token>
-    static constexpr bool construction_not_enabled_from()
-    {
-        if constexpr (std::is_lvalue_reference_v<Token>)
-            return !(  copy_construction_enabled_from<otn::remove_cvref_t<Token>>
-                    || copy_convertion_enabled_from<otn::remove_cvref_t<Token>>);
-        else
-            return !(  move_construction_enabled_from<otn::remove_cvref_t<Token>>
-                    || move_convertion_enabled_from<otn::remove_cvref_t<Token>>);
-    }
+    static constexpr bool construction_not_enabled_from =
+        std::is_lvalue_reference_v<Token>
+        ? !(  copy_construction_enabled_from<otn::remove_cvref_t<Token>>
+           || copy_convertion_enabled_from<otn::remove_cvref_t<Token>>)
+        : !(  move_construction_enabled_from<otn::remove_cvref_t<Token>>
+           || move_convertion_enabled_from<otn::remove_cvref_t<Token>>);
 
+    // Owner base traits.
     template <class With>
     static constexpr bool has_same_owner_base =
         owner_base::has_same_v<
@@ -172,72 +213,119 @@ protected:
             owner_base::specify_t<otn::traits::basis_t<With>,
                                   otn::traits::ownership_t<With>>>;
 
-    template <class Token>
-    static constexpr bool is_token_construction_noexcept()
-    {
-        return noexcept(referrer_type{
-                        referrer::adapt<referrer_type>(
-                            std::declval<Token>())});
-    }
-
-    static constexpr bool is_copy_noexcept()
-    {
-        if constexpr (copy_construction_enabled_from<referrer_type>)
-            return is_token_construction_noexcept<const referrer_type&>();
-        else
-            return true;
-    }
-
-    static constexpr bool is_move_noexcept()
-    {
-        if constexpr (move_construction_enabled_from<referrer_type>)
-            return is_token_construction_noexcept < referrer_type && > ();
-        else
-            return true;
-    }
-
 public:
     // Destructor
     ~token() = default;
 
     // Default constructors
+#ifdef __cpp_concepts
+    constexpr token() noexcept
+    requires(kind::is_optional) {}
+
+    token()
+    requires(kind::is_single) = delete;
+#else
     OTN_CONCEPT_REQUIRES_(kind::is_optional)
     constexpr token() noexcept {}
 
     OTN_CONCEPT_REQUIRES_(kind::is_single)
     token() = delete;
+#endif
 
     // Nullptr constructors
-    OTN_CONCEPT_REQUIRES_(kind::is_optional && copy_construction_enabled_from<T*>)
+#ifdef __cpp_concepts
     constexpr token(std::nullptr_t) noexcept
+    requires(kind::is_optional && copy_construction_enabled_from<T*>)
         : token{} {}
+
+    token(std::nullptr_t)
+    requires(kind::is_optional && !copy_construction_enabled_from<T*>) = delete;
+
+    token(std::nullptr_t)
+    requires(kind::is_single) = delete;
+#else
+    OTN_CONCEPT_REQUIRES_(kind::is_optional && copy_construction_enabled_from<T*>)
+    constexpr token(std::nullptr_t) noexcept : token{} {}
 
     OTN_CONCEPT_REQUIRES_(kind::is_optional && !copy_construction_enabled_from<T*>)
     token(std::nullptr_t) = delete;
 
     OTN_CONCEPT_REQUIRES_(kind::is_single)
     token(std::nullptr_t) = delete;
+#endif
 
     // Itself constructors
+#ifdef __cpp_concepts
+    template <class ... Args>
+    requires(kind::itself_construction_enabled
+             // NOTE: Doesn't work with incomplete type.
+             /*&& is_itself_constructible<element_type, Args...>*/)
+#else
     template <class ... Args,
               OTN_CONCEPT_REQUIRES(kind::itself_construction_enabled
                                    // NOTE: Doesn't work with incomplete type.
-                                   /*&& !std::is_abstract_v<T>*/)>
-    explicit token(itself_t, Args&& ... args)
-        : token{referrer::pure, referrer::make<element_type, brief_spec>(
-                    std::forward<Args>(args) ...)}
+                                   /*&& is_itself_constructible<element_type, Args...>*/)>
+#endif
+    explicit token(itself_t, Args&& ... args) OTN_NOEXCEPT(
+        (is_itself_nothrow_constructible<element_type, Args...>))
+        : m_referrer{referrer::make<referrer_type, element_type>(
+                         std::forward<Args>(args) ...)}
     {
-        static_assert(!std::is_abstract_v<element_type>,
-                      "the element_type is not abstract");
+        static_assert(is_itself_constructible<element_type, Args...>,
+                      "the element_type is constructible from Args");
+
+        OTN_ASSERT(constructed_with_valued_referrer());
     }
 
+#ifdef __cpp_concepts
+    template <class Y, class ... Args>
+    requires(  kind::itself_construction_enabled
+            && is_convertible_from_element<Y>
+            && is_itself_constructible<Y, Args...>)
+#else
     template <class Y, class ... Args,
               OTN_CONCEPT_REQUIRES(  kind::itself_construction_enabled
                                   && is_convertible_from_element<Y>
-                                  && !std::is_abstract_v<Y>)>
-    explicit token(itself_type_t<Y>, Args&& ... args)
-        : token{referrer::pure, referrer::make<Y, brief_spec>(
-                    std::forward<Args>(args) ...)} {}
+                                  && is_itself_constructible<Y, Args...>)>
+#endif
+    explicit token(itself_type_t<Y>, Args&& ... args) OTN_NOEXCEPT(
+        (is_itself_nothrow_constructible<Y, Args...>))
+        : m_referrer{referrer::make<referrer_type, Y>(
+                         std::forward<Args>(args) ...)}
+    {
+        OTN_ASSERT(constructed_with_valued_referrer());
+    }
+
+#ifdef __cpp_concepts
+    template <class Y, class ... Args>
+    requires(  kind::itself_construction_enabled
+            && is_convertible_from_element<Y>
+            && !is_itself_constructible<Y, Args...>)
+    token(itself_type_t<Y>, Args&& ... args) = delete;
+
+    template <class Y, class ... Args>
+    requires(  kind::itself_construction_enabled
+            && is_incompatible_with_element<Y>)
+    token(itself_type_t<Y>, Args&& ... args) = delete;
+
+    template <class Y, class ... Args>
+    requires(  kind::itself_construction_enabled
+            && is_const_incorrect_with_element<Y>)
+    token(itself_type_t<Y>, Args&& ... args) = delete;
+
+    template <class ... Args>
+    requires(!kind::itself_construction_enabled)
+    token(itself_t, Args&& ... args) = delete;
+
+    template <class Y, class ... Args>
+    requires(!kind::itself_construction_enabled)
+    token(itself_type_t<Y>, Args&& ... args) = delete;
+#else
+    template <class Y, class ... Args,
+              OTN_CONCEPT_REQUIRES(  kind::itself_construction_enabled
+                                  && is_convertible_from_element<Y>
+                                  && !is_itself_constructible<Y, Args...>)>
+    token(itself_type_t<Y>, Args&& ... args) = delete;
 
     template <class Y, class ... Args,
               OTN_CONCEPT_REQUIRES(  kind::itself_construction_enabled
@@ -249,11 +337,6 @@ public:
                                   && is_const_incorrect_with_element<Y>)>
     token(itself_type_t<Y>, Args&& ... args) = delete;
 
-    template <class Y, class ... Args,
-              OTN_CONCEPT_REQUIRES(  kind::itself_construction_enabled
-                                  && std::is_abstract_v<Y>)>
-    token(itself_type_t<Y>, Args&& ... args) = delete;
-
     template <class ... Args,
               OTN_CONCEPT_REQUIRES(!kind::itself_construction_enabled)>
     token(itself_t, Args&& ... args) = delete;
@@ -261,189 +344,413 @@ public:
     template <class Y, class ... Args,
               OTN_CONCEPT_REQUIRES(!kind::itself_construction_enabled)>
     token(itself_type_t<Y>, Args&& ... args) = delete;
+#endif
 
     // Copy constructors
-    // TODO: Add concept constraint 'copy_construction_enabled_from<token>'
-    // and '= delete'.
-    token(const token& other) OTN_NOEXCEPT(is_copy_noexcept())
-        : token{referrer::pure, other.referrer()}
+#ifdef __cpp_concepts
+    token(const token& other) OTN_NOEXCEPT(
+        (referrer::is_adaptor_copy_nothrow<referrer_type, referrer_type>))
+    requires(  kind::copy_construction_enabled
+            && is_referrer_copy_constructible)
+        : m_referrer{other.referrer()}
     {
-        static_assert(copy_construction_enabled_from<token>,
-                      "token is copyable from token");
+        if constexpr (kind::is_single)
+            OTN_ASSERT(constructed_with_valued_referrer());
     }
+
+    token(const token& other)
+    requires(!kind::copy_construction_enabled) = delete;
+
+    token(const token& other)
+    requires(!is_referrer_copy_constructible) = delete;
+#else
+    token(const token& other) OTN_NOEXCEPT(
+        (referrer::is_adaptor_copy_nothrow<referrer_type, referrer_type>))
+        : m_referrer{other.referrer()}
+    {
+        static_assert(kind::copy_construction_enabled,
+                      "copy construction of the token is enabled");
+        static_assert(is_referrer_copy_constructible,
+                      "referrer of the token is copy constructible");
+
+        if constexpr (kind::is_single)
+            OTN_ASSERT(constructed_with_valued_referrer());
+    }
+#endif
 
     // Move constructors
-    // TODO: Add concept constraint 'move_construction_enabled_from<token>'
-    // and '= delete'.
-    token(token&& other) OTN_NOEXCEPT(is_move_noexcept())
-        : token{referrer::pure, std::move(other.referrer())}
+#ifdef __cpp_concepts
+    token(token&& other) OTN_NOEXCEPT(
+        (referrer::is_adaptor_move_nothrow<referrer_type, referrer_type>))
+    requires(  kind::move_construction_enabled
+            && is_referrer_move_constructible)
+        : m_referrer{std::move(other.referrer())}
     {
-        static_assert(move_construction_enabled_from<token>,
-                      "token is movable from token");
+        if constexpr (kind::is_single)
+            OTN_ASSERT(constructed_with_valued_referrer());
     }
 
+    token(token&& other)
+    requires(!kind::move_construction_enabled) = delete;
+
+    token(token&& other)
+    requires(!is_referrer_move_constructible) = delete;
+#else
+    token(token&& other) OTN_NOEXCEPT(
+        (referrer::is_adaptor_move_nothrow<referrer_type, referrer_type>))
+        : m_referrer{std::move(other.referrer())}
+    {
+        static_assert(kind::move_construction_enabled,
+                      "move construction of the token is enabled");
+        static_assert(is_referrer_move_constructible,
+                      "referrer of the token is move constructible");
+
+        if constexpr (kind::is_single)
+            OTN_ASSERT(constructed_with_valued_referrer());
+    }
+#endif
+
     // Forwarding constructors
+#ifdef __cpp_concepts
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && construction_implicit_enabled_from<Token>
+            && is_element_convertible_from<Token>
+            && is_referrer_constructible_from<Token>)
+#else
     template <class Token,
-              OTN_CONCEPT_REQUIRES(  is_convertible_from<Token>
-                                  && construction_implicit_enabled_from<Token>())>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
+                                  && construction_implicit_enabled_from<Token>
+                                  && is_element_convertible_from<Token>
+                                  && is_referrer_constructible_from<Token>)>
+#endif
     token(Token&& other) OTN_NOEXCEPT(
-        is_token_construction_noexcept<Token>())
-        : token{referrer::gate, std::forward<Token>(other)} {}
+        (referrer::is_adaptor_nothrow<referrer_type, Token>))
+        : m_referrer{referrer::adapt<referrer_type>(
+                         assert_construct_from_referrer(std::forward<Token>(other)))}
+    {
+        if constexpr (kind::is_single)
+            OTN_ASSERT(constructed_with_valued_referrer());
+    }
 
+#ifdef __cpp_concepts
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && construction_explicit_enabled_from<Token>
+            && is_element_convertible_from<Token>
+            && is_referrer_constructible_from<Token>)
+#else
     template <class Token,
-              OTN_CONCEPT_REQUIRES(  is_convertible_from<Token>
-                                  && construction_explicit_enabled_from<Token>())>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
+                                  && construction_explicit_enabled_from<Token>
+                                  && is_element_convertible_from<Token>
+                                  && is_referrer_constructible_from<Token>)>
+#endif
     explicit token(Token&& other) OTN_NOEXCEPT(
-        is_token_construction_noexcept<Token>())
-        : token{referrer::gate, std::forward<Token>(other)} {}
+        (referrer::is_adaptor_nothrow<referrer_type, Token>))
+        : m_referrer{referrer::adapt<referrer_type>(
+                         assert_construct_from_referrer(std::forward<Token>(other)))}
+    {
+        if constexpr (kind::is_single)
+            OTN_ASSERT(constructed_with_valued_referrer());
+    }
 
+#ifdef __cpp_concepts
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && is_element_convertible_from<Token>
+            && construction_not_enabled_from<Token>)
+    token(Token&& other) = delete;
+
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && is_element_convertible_from<Token>
+            && !is_referrer_constructible_from<Token>)
+    token(Token&& other) = delete;
+
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && is_element_incompatible_with<Token>)
+    token(Token&& other) = delete;
+
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && is_element_const_incorrect_with<Token>)
+    token(Token&& other) = delete;
+#else
     template <class Token,
-              OTN_CONCEPT_REQUIRES(  is_convertible_from<Token>
-                                  && construction_not_enabled_from<Token>())>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
+                                  && is_element_convertible_from<Token>
+                                  && construction_not_enabled_from<Token>)>
     token(Token&& other) = delete;
 
     template <class Token,
-              OTN_CONCEPT_REQUIRES(is_incompatible_with<Token>)>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
+                                  && is_element_convertible_from<Token>
+                                  && !is_referrer_constructible_from<Token>)>
     token(Token&& other) = delete;
 
     template <class Token,
-              OTN_CONCEPT_REQUIRES(is_const_incorrect_with<Token>)>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
+                                  && is_element_incompatible_with<Token>)>
     token(Token&& other) = delete;
+
+    template <class Token,
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
+                                  && is_element_const_incorrect_with<Token>)>
+    token(Token&& other) = delete;
+#endif
 
     // Copy nullptr assignment operators
+#ifdef __cpp_concepts
+    token& operator=(std::nullptr_t) noexcept
+    requires(kind::is_optional && copy_construction_enabled_from<T*>)
+#else
     OTN_CONCEPT_REQUIRES_(kind::is_optional && copy_construction_enabled_from<T*>)
     token& operator=(std::nullptr_t) noexcept
+#endif
     {
         token{nullptr}.swap_unrestricted(*this);
         return *this;
     }
 
+#ifdef __cpp_concepts
+    token& operator=(std::nullptr_t)
+    requires(kind::is_optional && !copy_construction_enabled_from<T*>) = delete;
+
+    token& operator=(std::nullptr_t)
+    requires(kind::is_single) = delete;
+#else
     OTN_CONCEPT_REQUIRES_(kind::is_optional && !copy_construction_enabled_from<T*>)
     token& operator=(std::nullptr_t) = delete;
 
     OTN_CONCEPT_REQUIRES_(kind::is_single)
     token& operator=(std::nullptr_t) = delete;
+#endif
 
     // Copy assignment operators
-    // TODO: Add concept constraint 'copy_construction_enabled_from<token>'
-    // and '= delete'.
+#ifdef __cpp_concepts
     token& operator=(const token& other) OTN_NOEXCEPT(
-        noexcept(token { other }))
+        (referrer::is_adaptor_copy_nothrow<referrer_type, referrer_type>))
+    requires(  kind::copy_construction_enabled
+            && is_referrer_copy_assignable)
     {
         token{other}.swap_unrestricted(*this);
         return *this;
     }
 
+    token& operator=(const token& other)
+    requires(!kind::copy_construction_enabled) = delete;
+
+    token& operator=(const token& other)
+    requires(!is_referrer_copy_assignable) = delete;
+#else
+    token& operator=(const token& other) OTN_NOEXCEPT(
+        (referrer::is_adaptor_copy_nothrow<referrer_type, referrer_type>))
+    {
+        token{other}.swap_unrestricted(*this);
+        return *this;
+    }
+#endif
+
     // Move assignment operators
-    // TODO: Add concept constraint 'move_construction_enabled_from<token>'
-    // and '= delete'.
+#ifdef __cpp_concepts
     token& operator=(token&& other) OTN_NOEXCEPT(
-        noexcept(token { std::move(other) }))
+        (referrer::is_adaptor_move_nothrow<referrer_type, referrer_type>))
+    requires(  kind::move_construction_enabled
+            && is_referrer_move_assignable)
     {
         token{std::move(other)}.swap_unrestricted(*this);
         return *this;
     }
 
+    token& operator=(token&& other)
+    requires(!kind::move_construction_enabled) = delete;
+
+    token& operator=(token&& other)
+    requires(!is_referrer_move_assignable) = delete;
+#else
+    token& operator=(token&& other) OTN_NOEXCEPT(
+        (referrer::is_adaptor_move_nothrow<referrer_type, referrer_type>))
+    {
+        token{std::move(other)}.swap_unrestricted(*this);
+        return *this;
+    }
+#endif
+
     // Forwarding assignment operators
+#ifdef __cpp_concepts
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && construction_implicit_enabled_from<Token>
+            && is_element_convertible_from<Token>
+            && is_referrer_assignable_from<Token>)
+#else
     template <class Token,
-              OTN_CONCEPT_REQUIRES(  is_convertible_from<Token>
-                                  && construction_implicit_enabled_from<Token>())>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
+                                  && construction_implicit_enabled_from<Token>
+                                  && is_element_convertible_from<Token>
+                                  && is_referrer_assignable_from<Token>)>
+#endif
     token& operator=(Token&& other) OTN_NOEXCEPT(
-        noexcept(token { std::forward<Token>(other) }))
+        (referrer::is_adaptor_nothrow<referrer_type, Token>))
     {
         token{std::forward<Token>(other)}.swap_unrestricted(*this);
         return *this;
     }
 
+#ifdef __cpp_concepts
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && is_element_convertible_from<Token>
+            && construction_not_enabled_from<Token>)
+    token& operator=(Token && other) = delete;
+
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && is_element_convertible_from<Token>
+            && !is_referrer_assignable_from<Token>)
+    token& operator=(Token && other) = delete;
+
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && is_element_incompatible_with<Token>)
+    token& operator=(Token && other) = delete;
+
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && is_element_const_incorrect_with<Token>)
+    token& operator=(Token && other) = delete;
+#else
     template <class Token,
-              OTN_CONCEPT_REQUIRES(  is_convertible_from<Token>
-                                  && construction_not_enabled_from<Token>())>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
+                                  && is_element_convertible_from<Token>
+                                  && construction_not_enabled_from<Token>)>
     token& operator=(Token&& other) = delete;
 
     template <class Token,
-              OTN_CONCEPT_REQUIRES(is_incompatible_with<Token>)>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
+                                  && is_element_convertible_from<Token>
+                                  && !is_referrer_assignable_from<Token>)>
     token& operator=(Token&& other) = delete;
 
     template <class Token,
-              OTN_CONCEPT_REQUIRES(is_const_incorrect_with<Token>)>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
+                                  && is_element_incompatible_with<Token>)>
     token& operator=(Token&& other) = delete;
+
+    template <class Token,
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
+                                  && is_element_const_incorrect_with<Token>)>
+    token& operator=(Token&& other) = delete;
+#endif
 
     // Conversion functions
+#ifdef __cpp_concepts
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && copy_convertion_enabled_to<Token>
+            && !copy_convertion_explicit_to<Token>
+            && is_element_convertible_to<Token>
+            && is_referrer_copy_convertible_to<Token>)
+#else
     template <class Token,
-              OTN_CONCEPT_REQUIRES(  is_convertible_to<Token>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
                                   && copy_convertion_enabled_to<Token>
-                                  && !copy_convertion_explicit_to<Token>)>
+                                  && !copy_convertion_explicit_to<Token>
+                                  && is_element_convertible_to<Token>
+                                  && is_referrer_copy_convertible_to<Token>)>
+#endif
     operator Token() const & OTN_NOEXCEPT(
-        noexcept(base::make<Token>((*this).referrer())))
-    { return base::make<Token>((*this).referrer()); }
+        (referrer::is_adaptor_copy_nothrow<Token, referrer_type>))
+    { return referrer::adapt<Token>((*this).referrer()); }
 
+#ifdef __cpp_concepts
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && copy_convertion_enabled_to<Token>
+            && copy_convertion_explicit_to<Token>
+            && is_element_convertible_to<Token>
+            && is_referrer_copy_convertible_to<Token>)
+#else
     template <class Token,
-              OTN_CONCEPT_REQUIRES(  is_convertible_to<Token>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
                                   && copy_convertion_enabled_to<Token>
-                                  && copy_convertion_explicit_to<Token>)>
+                                  && copy_convertion_explicit_to<Token>
+                                  && is_element_convertible_to<Token>
+                                  && is_referrer_copy_convertible_to<Token>)>
+#endif
     explicit operator Token() const & OTN_NOEXCEPT(
-        noexcept(base::make<Token>((*this).referrer())))
-    { return base::make<Token>((*this).referrer()); }
+        (referrer::is_adaptor_copy_nothrow<Token, referrer_type>))
+    { return referrer::adapt<Token>((*this).referrer()); }
 
+#ifdef __cpp_concepts
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && move_convertion_enabled_to<Token>
+            && !move_convertion_explicit_to<Token>
+            && is_element_convertible_to<Token>
+            && is_referrer_move_convertible_to<Token>)
+#else
     template <class Token,
-              OTN_CONCEPT_REQUIRES(  is_convertible_to<Token>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
                                   && move_convertion_enabled_to<Token>
-                                  && !move_convertion_explicit_to<Token>)>
+                                  && !move_convertion_explicit_to<Token>
+                                  && is_element_convertible_to<Token>
+                                  && is_referrer_move_convertible_to<Token>)>
+#endif
     operator Token() && OTN_NOEXCEPT(
-        noexcept(base::make<Token>(std::move((*this).referrer()))))
-    { return base::make<Token>(std::move((*this).referrer())); }
+        (referrer::is_adaptor_move_nothrow<Token, referrer_type>))
+    { return referrer::adapt<Token>(std::move((*this).referrer())); }
 
+#ifdef __cpp_concepts
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && move_convertion_enabled_to<Token>
+            && move_convertion_explicit_to<Token>
+            && is_element_convertible_to<Token>
+            && is_referrer_move_convertible_to<Token>)
+#else
     template <class Token,
-              OTN_CONCEPT_REQUIRES(  is_convertible_to<Token>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
                                   && move_convertion_enabled_to<Token>
-                                  && move_convertion_explicit_to<Token>)>
+                                  && move_convertion_explicit_to<Token>
+                                  && is_element_convertible_to<Token>
+                                  && is_referrer_move_convertible_to<Token>)>
+#endif
     explicit operator Token() && OTN_NOEXCEPT(
-        noexcept(base::make<Token>(std::move((*this).referrer()))))
-    { return base::make<Token>(std::move((*this).referrer())); }
+        (referrer::is_adaptor_move_nothrow<Token, referrer_type>))
+    { return referrer::adapt<Token>(std::move((*this).referrer())); }
 
+#ifdef __cpp_concepts
+    template <class Token>
+    requires(  otn::is_token_v<Token>
+            && !move_convertion_enabled_to<Token>
+            && copy_convertion_enabled_to<Token>
+            && is_element_convertible_to<Token>)
+#else
     template <class Token,
-              OTN_CONCEPT_REQUIRES(  is_convertible_to<Token>
+              OTN_CONCEPT_REQUIRES(  otn::is_token_v<Token>
                                   && !move_convertion_enabled_to<Token>
-                                  && copy_convertion_enabled_to<Token>)>
+                                  && copy_convertion_enabled_to<Token>
+                                  && is_element_convertible_to<Token>)>
+#endif
     operator Token() && = delete;
 
+    // ----- internal
     // Modifiers
-    // TODO: Is the 'release' the same as the 'operator='? Remove it?
-    OTN_CONCEPT_REQUIRES_(kind::is_optional)
-    void reset() noexcept
-    { token{}.swap_unrestricted(*this); }
+    static constexpr bool is_swappable =
+        kind::move_construction_enabled && std::is_swappable_v<referrer_type>;
+    static constexpr bool is_nothrow_swappable =
+        std::is_nothrow_swappable_v<referrer_type>;
 
-    OTN_CONCEPT_REQUIRES_(kind::is_single)
-    void reset() = delete;
-
-    void reset(std::nullptr_t) = delete;
-
-    template <class Y, OTN_CONCEPT_REQUIRES(  is_convertible_from_element<Y>
-                                           && copy_construction_enabled_from<Y*>)>
-    void reset(Y* p) OTN_NOEXCEPT(is_token_construction_noexcept<Y*>())
-    {
-        if (!OTN_ASSERT_CHECK(non_self(p)))
-            return;
-
-        if constexpr (kind::is_single_owner)
-            if (!OTN_ASSERT_CHECK(construct_from_valued_referrer(p)))
-                return;
-
-        token{p}.swap_unrestricted(*this);
-    }
-
-    template <class Y, OTN_CONCEPT_REQUIRES(  is_convertible_from_element<Y>
-                                           && !copy_construction_enabled_from<Y*>)>
-    void reset(Y* p) = delete;
-
-    template <class Y, OTN_CONCEPT_REQUIRES(is_incompatible_with_element<Y>)>
-    void reset(Y* p) = delete;
-
-    template <class Y, OTN_CONCEPT_REQUIRES(is_const_incorrect_with_element<Y>)>
-    void reset(Y* p) = delete;
-
-    template <OTN_CONCEPT_REQUIRES(kind::is_owner)>
-    void swap(token& other) noexcept
+#ifdef __cpp_concepts
+    void swap(token& other) OTN_NOEXCEPT(is_nothrow_swappable)
+    requires(is_swappable && kind::is_owner)
+#else
+    OTN_CONCEPT_REQUIRES_(is_swappable && kind::is_owner)
+    void swap(token& other) OTN_NOEXCEPT(is_nothrow_swappable)
+#endif
     {
         if constexpr (kind::is_single)
         {
@@ -458,44 +765,120 @@ public:
         (*this).swap_unrestricted(other);
     }
 
-    template <OTN_CONCEPT_REQUIRES(kind::is_observer)>
-    void swap(token& other) noexcept
+#ifdef __cpp_concepts
+    void swap(token& other) OTN_NOEXCEPT(is_nothrow_swappable)
+    requires(is_swappable && kind::is_observer)
+#else
+    OTN_CONCEPT_REQUIRES_(is_swappable && kind::is_observer)
+    void swap(token& other) OTN_NOEXCEPT(is_nothrow_swappable)
+#endif
     { (*this).swap_unrestricted(other); }
+    // ----- internal
 
     // Observers
-    OTN_CONCEPT_REQUIRES_(kind::is_optional && kind::dereferencing_enabled)
+    // operator*
+#ifdef __cpp_concepts
     OTN_DEREFERENCE_OPTIONAL_DEPRECATION
-    element_type & operator*() const noexcept
+    [[nodiscard]] element_type& operator*() const noexcept
+    requires(kind::dereferencing_enabled && kind::is_optional)
+#else
+    OTN_CONCEPT_REQUIRES_(kind::dereferencing_enabled && kind::is_optional)
+    OTN_DEREFERENCE_OPTIONAL_DEPRECATION
+    [[nodiscard]] element_type& operator*() const noexcept
+#endif
     { return (*this).element(); }
 
-    OTN_CONCEPT_REQUIRES_(kind::is_single && kind::dereferencing_enabled)
-    element_type & operator*() const noexcept
+#ifdef __cpp_concepts
+    [[nodiscard]] element_type& operator*() const noexcept
+    requires(kind::dereferencing_enabled && kind::is_single)
+#else
+    OTN_CONCEPT_REQUIRES_(kind::dereferencing_enabled && kind::is_single)
+    [[nodiscard]] element_type& operator*() const noexcept
+#endif
     { return (*this).element(); }
 
+#ifdef __cpp_concepts
+    element_type& operator*() const noexcept
+    requires(!kind::dereferencing_enabled) = delete;
+#else
+    OTN_CONCEPT_REQUIRES_(!kind::dereferencing_enabled)
+    element_type & operator*() const = delete;
+#endif
+
+    // operator->
+#ifdef __cpp_concepts
+    OTN_MEMBER_OF_POINTER_DEPRECATION
+    [[nodiscard]] element_type* operator->() const noexcept
+    requires(kind::dereferencing_enabled)
+#else
     OTN_CONCEPT_REQUIRES_(kind::dereferencing_enabled)
     OTN_MEMBER_OF_POINTER_DEPRECATION
-    element_type* operator->() const noexcept
+    [[nodiscard]] element_type* operator->() const noexcept
+#endif
     {
         OTN_ASSERT(access_to_valued_referrer());
         return otn::internal::to_address((*this).referrer());
     }
 
-    OTN_CONCEPT_REQUIRES_(kind::is_optional && kind::direct_access_enabled)
-    explicit operator bool() const noexcept
+#ifdef __cpp_concepts
+    element_type* operator->() const noexcept
+    requires(!kind::dereferencing_enabled) = delete;
+#else
+    OTN_CONCEPT_REQUIRES_(!kind::dereferencing_enabled)
+    element_type* operator->() const = delete;
+#endif
+
+    // operator bool
+#ifdef __cpp_concepts
+    [[nodiscard]] explicit operator bool() const & noexcept
+    requires(kind::direct_access_enabled && kind::is_optional)
+#else
+    OTN_CONCEPT_REQUIRES_(kind::direct_access_enabled && kind::is_optional)
+    [[nodiscard]] explicit operator bool() const & noexcept
+#endif
     { return static_cast<bool>((*this).referrer()); }
 
-    OTN_CONCEPT_REQUIRES_(kind::is_single && kind::direct_access_enabled)
+#ifdef __cpp_concepts
     OTN_SINGLE_BOOL_DEPRECATION
-    explicit constexpr operator bool() const noexcept
+    [[nodiscard]] explicit constexpr operator bool() const & noexcept
+    requires(kind::direct_access_enabled && kind::is_single)
+#else
+    OTN_CONCEPT_REQUIRES_(kind::direct_access_enabled && kind::is_single)
+    OTN_SINGLE_BOOL_DEPRECATION
+    [[nodiscard]] explicit constexpr operator bool() const & noexcept
+#endif
     { return true; }
 
+#ifdef __cpp_concepts
+    operator bool() const & noexcept
+    requires(!kind::direct_access_enabled) = delete;
+#else
+    OTN_CONCEPT_REQUIRES_(!kind::direct_access_enabled)
+    operator bool() const& = delete;
+#endif
+
+    operator bool() && = delete;
+
+    // expired
+#ifdef __cpp_concepts
+    [[nodiscard]] bool expired() const noexcept
+    requires(kind::is_observer && referrer_summary::is_trackable)
+#else
     OTN_CONCEPT_REQUIRES_(kind::is_observer && referrer_summary::is_trackable)
-    bool expired() const noexcept
+    [[nodiscard]] bool expired() const noexcept
+#endif
     { return m_referrer.expired(); }
 
+    // owner_before
+#ifdef __cpp_concepts
+    template <class Y, class SpecY>
+    requires(has_same_owner_base<
+                 typename summaries::referrer<Y, SpecY>::type>)
+#else
     template <class Y, class SpecY,
               OTN_CONCEPT_REQUIRES(has_same_owner_base<
                                        typename summaries::referrer<Y, SpecY>::type>)>
+#endif
     bool owner_before(const token<Y, SpecY>& other) const noexcept
     {
         struct comparer : public token<Y, SpecY>::accessor
@@ -508,8 +891,13 @@ public:
         return comparer{} ((*this).referrer(), other);
     }
 
+#ifdef __cpp_concepts
+    template <template <class ... Args> class Referrer, class ... Args>
+    requires(has_same_owner_base<Referrer<Args ...>>)
+#else
     template <template <class ... Args> class Referrer, class ... Args,
               OTN_CONCEPT_REQUIRES(has_same_owner_base<Referrer<Args ...>>)>
+#endif
     bool owner_before(const Referrer<Args ...>& other) const noexcept
     { return (*this).referrer().owner_before(other); }
 
@@ -526,31 +914,21 @@ public:
         const referrer_type& referrer(const token& source) const noexcept
         { return source.referrer(); }
 
+#ifdef __cpp_concepts
+        element_type& element(const token& source) const noexcept
+        requires(kind::direct_access_enabled)
+#else
         OTN_CONCEPT_REQUIRES_(kind::direct_access_enabled)
         element_type & element(const token& source) const noexcept
+#endif
         { return source.element(); }
     };
 
 protected:
-    // Forwarding constructors
-    template <class Referrer>
-    token(referrer::pure_t, Referrer&& other) OTN_NOEXCEPT(
-        is_token_construction_noexcept<Referrer>())
-        : m_referrer{assert_construct_from_referrer(
-                         std::forward<Referrer>(other))}
-    {}
-
-    template <class Referrer>
-    token(referrer::gate_t, Referrer&& other) OTN_NOEXCEPT(
-        is_token_construction_noexcept<Referrer>())
-        : token{referrer::pure,
-                referrer::adapt<referrer_type>(std::forward<Referrer>(other))}
-    {}
-
     // Access
     referrer_type& referrer() noexcept
     {
-        if constexpr (kind::is_single_owner)
+        if constexpr (kind::is_single)
             OTN_ASSERT(access_to_valued_single());
 
         return m_referrer;
@@ -558,58 +936,80 @@ protected:
 
     const referrer_type& referrer() const noexcept
     {
-        if constexpr (kind::is_single_owner)
+        if constexpr (kind::is_single)
             OTN_ASSERT(access_to_valued_single());
 
         return m_referrer;
     }
 
+#ifdef __cpp_concepts
+    element_type& element() const noexcept
+    requires(kind::direct_access_enabled)
+#else
     OTN_CONCEPT_REQUIRES_(kind::direct_access_enabled)
     element_type & element() const noexcept
+#endif
     {
         OTN_ASSERT(access_to_valued_referrer());
         return *(*this).referrer();
     }
 
     // Support
-    void swap_unrestricted(token& other) noexcept
+    void swap_unrestricted(token& other) OTN_NOEXCEPT(is_nothrow_swappable)
     {
         using std::swap;
         swap(m_referrer, other.m_referrer);
     }
 
     // Contract conditions
-    OTN_CONCEPT_REQUIRES_(kind::is_single_owner)
-    bool access_to_valued_single() const noexcept
+#ifdef __cpp_concepts
+    constexpr bool access_to_valued_single() const noexcept
+    requires(kind::is_single)
+#else
+    OTN_CONCEPT_REQUIRES_(kind::is_single)
+    constexpr bool access_to_valued_single() const noexcept
+#endif
     { return static_cast<bool>(m_referrer); }
 
+#ifdef __cpp_concepts
+    constexpr bool access_to_valued_referrer() const noexcept
+    requires(kind::dereferencing_enabled)
+#else
     OTN_CONCEPT_REQUIRES_(kind::dereferencing_enabled)
-    bool access_to_valued_referrer() const noexcept
+    constexpr bool access_to_valued_referrer() const noexcept
+#endif
+    { return static_cast<bool>(m_referrer); }
+
+    constexpr bool constructed_with_valued_referrer() const noexcept
     { return static_cast<bool>(m_referrer); }
 
     template <class Referrer>
-    Referrer && assert_construct_from_referrer(Referrer && other) const noexcept
+    Referrer && assert_construct_from_referrer(Referrer && source) const noexcept
     {
-        if constexpr (kind::is_single_owner)
-            OTN_ASSERT(construct_from_valued_referrer(other));
+        if constexpr (kind::is_single)
+            OTN_ASSERT(construct_from_valued_referrer(source));
 
-        return std::forward<Referrer>(other);
+        return std::forward<Referrer>(source);
     }
 
     template <class Referrer>
-    bool construct_from_valued_referrer(Referrer&& referrer) const noexcept
-    { return static_cast<bool>(referrer); }
-
-    template <class Y>
-    bool non_self(Y* p) const noexcept
+    constexpr bool construct_from_valued_referrer(Referrer&& referrer) const noexcept
     {
-        // TODO: Use C++20 std::to_address().
-        auto referrer_address = otn::internal::to_address(m_referrer);
-        return referrer_address == nullptr || referrer_address != p;
+        if constexpr (otn::is_single_v<Referrer>)
+            return true;
+        else if constexpr (otn::is_direct_accessible_v<Referrer>)
+            return static_cast<bool>(referrer);
+        else
+            return !referrer.expired();
     }
 
-    template <OTN_CONCEPT_REQUIRES(kind::is_single_owner)>
-    bool swap_with_valued(const token& other) const noexcept
+#ifdef __cpp_concepts
+    constexpr bool swap_with_valued(const token& other) const noexcept
+    requires(kind::is_single)
+#else
+    OTN_CONCEPT_REQUIRES_(kind::is_single)
+    constexpr bool swap_with_valued(const token& other) const noexcept
+#endif
     { return static_cast<bool>(other.m_referrer); }
 
 private:

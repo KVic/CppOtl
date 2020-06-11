@@ -54,6 +54,14 @@ struct token<T, basis::raw, otn::ownership::unified, otn::multiplicity::single, 
 { using type = otn::raw::unified_single<T>; };
 
 template <class T, class D>
+struct token<T, basis::raw, otn::ownership::unique, otn::multiplicity::optional, D>
+{ using type = otn::raw::unique_optional<T>; };
+
+template <class T, class D>
+struct token<T, basis::raw, otn::ownership::unique, otn::multiplicity::single, D>
+{ using type = otn::raw::unique_single<T>; };
+
+template <class T, class D>
 struct token<T, basis::raw, otn::ownership::weak, otn::multiplicity::optional, D>
 { using type = otn::raw::weak_optional<T>; };
 

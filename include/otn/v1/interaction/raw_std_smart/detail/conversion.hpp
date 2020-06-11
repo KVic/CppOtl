@@ -125,6 +125,14 @@ property<move_construction,
          basis::raw, ownership::unified, TM,
          basis::std_smart, ownership::weak, YM> : implicit_enabled {};
 
+// raw::unique_any<T> <- std_smart::unique_any<Y>
+template <class TM,
+          class YM>
+struct
+property<move_construction,
+         basis::raw, ownership::unique, TM,
+         basis::std_smart, ownership::unique, YM> : implicit_enabled {};
+
 // raw::weak_any<T> <- std_smart::some_any<Y>
 template <class TM,
           class YO, class YM>
@@ -153,6 +161,22 @@ struct
 property<move_conversion,
          basis::raw, ownership::weak, TM,
          basis::std_smart, ownership::unified, YM> : implicit_enabled {};
+
+// std_smart::unique_any<Y> <- raw::unique_any<T>
+template <class TM,
+          class YM>
+struct
+property<move_conversion,
+         basis::raw, ownership::unique, TM,
+         basis::std_smart, ownership::unique, YM> : implicit_enabled {};
+
+// std_smart::shared_any<Y> <- raw::unique_any<T>
+template <class TM,
+          class YM>
+struct
+property<move_conversion,
+         basis::raw, ownership::unique, TM,
+         basis::std_smart, ownership::shared, YM> : implicit_enabled {};
 // ----- move conversion -------------------------------------------------------
 
 } // namespace conversion

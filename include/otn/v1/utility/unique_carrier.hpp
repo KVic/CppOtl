@@ -66,11 +66,21 @@ public:
     // operator T && () & = delete;
     operator T && () & { return release(); }
 
+#ifdef __cpp_concepts
+    template <class U>
+    requires(std::is_convertible_v<T, U>)
+    operator U() && { return release(); }
+
+    template <class U>
+    requires(std::is_convertible_v<T, U>)
+    operator U()& = delete;
+#else
     template <class U, OTN_CONCEPT_REQUIRES(std::is_convertible_v<T, U>)>
     operator U() && { return release(); }
 
     template <class U, OTN_CONCEPT_REQUIRES(std::is_convertible_v<T, U>)>
     operator U()& = delete;
+#endif
 
     auto& operator*()
     {

@@ -27,4 +27,3 @@
 #include <otn/v1/interaction/std_smart_cpp_lang/detail/conversion.hpp>
 #include <otn/v1/interaction/std_smart_cpp_lang/detail/comparison.hpp>
 #include <otn/v1/interaction/std_smart_cpp_lang/detail/referrer.hpp>
-#include <otn/v1/interaction/std_smart_cpp_lang/detail/base.hpp>

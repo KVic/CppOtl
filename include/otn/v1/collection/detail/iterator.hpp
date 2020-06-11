@@ -30,6 +30,7 @@
 #include <otn/v1/proxy/factory.hpp>
 #include <otn/v1/support/utilize.hpp>
 #include <otn/v1/support/concept.hpp>
+#include <otn/v1/support/assert.hpp>
 
 #include <iterator>
 
@@ -62,13 +63,23 @@ public:
 
     iterator() = default;
 
+#ifdef __cpp_concepts
+    explicit iterator(Token& token) noexcept
+    requires(is_optional_v<Token>)
+#else
     OTN_CONCEPT_REQUIRES_(is_optional_v<Token>)
     explicit iterator(Token& token) noexcept
+#endif
         : m_token{token ? std::addressof(token) : nullptr}
     {}
 
+#ifdef __cpp_concepts
+    explicit iterator(Token& token) noexcept
+    requires(is_single_v<Token>)
+#else
     OTN_CONCEPT_REQUIRES_(is_single_v<Token>)
     explicit iterator(Token& token) noexcept
+#endif
         : m_token{std::addressof(token)}
     {}
 

@@ -155,7 +155,7 @@ token is empty
 <a name="One_Unified_if_else"></a>
 ### Unified "if-else"
 
-The `otn::gain` function provides unified optimized access to any token type. It returns a list of a proxy, which can be bound to variables by *structured binding*, after check. A list with one proxy can be dereferenced directly, after check.
+The `otn::gain` function provides unified optimized access to any token type. It returns a list of a proxy, which can be bound to variables by *structured binding*, after check. The proxy list can be dereferenced to access tokens' objects, after check.
 
 ##### Example
 
@@ -428,7 +428,7 @@ void calc(const OptionalA& a, const OptionalB& b)
 {
     if (auto locs = otn::gain(a, b))
     {
-        auto& [a, b] = locs;
+        auto& [a, b] = *locs;
         std::cout << "result: " << a + b << std::endl;
     }
     else

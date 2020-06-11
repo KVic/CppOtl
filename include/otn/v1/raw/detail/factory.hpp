@@ -24,30 +24,25 @@
 
 #pragma once
 
+#include <otn/v1/raw/detail/token.hpp>
+
 namespace otn
 {
 
 inline namespace v1
 {
 
-namespace referrer
+namespace raw
 {
 
-struct pure_t
-{
-    explicit pure_t() = default;
-};
+// T - Type
 
-inline constexpr pure_t pure{};
+template <class T, class ... Args>
+inline
+unique_single<T> make_unique(Args&& ... args)
+{ return unique_single<T>{itself, std::forward<Args>(args)...}; }
 
-struct gate_t
-{
-    explicit gate_t() = default;
-};
-
-inline constexpr gate_t gate{};
-
-} // namespace referrer
+} // namespace raw
 
 } // namespace v1
 

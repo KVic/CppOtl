@@ -40,9 +40,14 @@ namespace proxy
 template <class Token, class = void>
 struct factory
 {
-    template <class Token_>
-    static constexpr Token_ make(Token_&& token) noexcept
-    { return std::forward<Token_>(token); }
+    static constexpr Token& make(Token& token) noexcept
+    { return token; }
+
+    static constexpr const Token& make(const Token& token) noexcept
+    { return token; }
+
+    static constexpr Token make(Token&& token) noexcept
+    { return Token{std::move(token)}; }
 };
 
 template <class Token>

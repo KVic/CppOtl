@@ -49,6 +49,9 @@ template <class T>
 using unified = unified_single<T>;
 
 template <class T>
+using unique = unique_single<T>;
+
+template <class T>
 using weak = weak_single<T>;
 
 } // namespace raw

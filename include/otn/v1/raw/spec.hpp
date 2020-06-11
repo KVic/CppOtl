@@ -52,6 +52,16 @@ using unified_single = brief<otn::basis::raw,
                              otn::multiplicity::single,
                              otn::deleter::none>;
 
+using unique_optional = brief<otn::basis::raw,
+                              otn::ownership::unique,
+                              otn::multiplicity::optional,
+                              otn::deleter::by_default>;
+
+using unique_single = brief<otn::basis::raw,
+                            otn::ownership::unique,
+                            otn::multiplicity::single,
+                            otn::deleter::by_default>;
+
 using weak_optional = brief<otn::basis::raw,
                             otn::ownership::weak,
                             otn::multiplicity::optional,

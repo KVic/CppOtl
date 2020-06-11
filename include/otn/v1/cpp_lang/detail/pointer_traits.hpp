@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <otn/v1/cpp_lang/unified_optional.hpp>
+#include <otn/v1/cpp_lang/origin.hpp>
 
 #include <memory>
 
@@ -42,6 +42,34 @@ struct pointer_traits<otn::cpp_lang::unified_optional<T>>
 
     static element_type* to_address(const pointer& p) noexcept
     { return p; }
+};
+
+template <class T>
+struct pointer_traits<otn::cpp_lang::thin_optional<T>>
+{
+    using element_type    = typename otn::cpp_lang::thin_optional<T>::element_type;
+    using difference_type = std::ptrdiff_t;
+    using pointer         = otn::cpp_lang::thin_optional<T>;
+
+    template <class U>
+    using rebind = otn::cpp_lang::thin_optional<U>;
+
+    static element_type* to_address(const pointer& p) noexcept
+    { return static_cast<element_type*>(p); }
+};
+
+template <class T>
+struct pointer_traits<otn::cpp_lang::thin_single<T>>
+{
+    using element_type    = typename otn::cpp_lang::thin_single<T>::element_type;
+    using difference_type = std::ptrdiff_t;
+    using pointer         = otn::cpp_lang::thin_single<T>;
+
+    template <class U>
+    using rebind = otn::cpp_lang::thin_single<U>;
+
+    static element_type* to_address(const pointer& p) noexcept
+    { return static_cast<element_type*>(p); }
 };
 
 } // namespace std

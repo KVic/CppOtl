@@ -31,8 +31,8 @@ inline namespace v1
 {
 
 template <class ... Tokens>
-[[nodiscard]]
-inline auto gain(Tokens&& ... tokens) noexcept;
+[[nodiscard]] inline
+auto gain(Tokens&& ... tokens) noexcept;
 
 void gain() = delete;
 

@@ -26,14 +26,7 @@
 
 #include <otn/v1/base/detail/concepts.hpp>
 
-#include <otn/v1/referrer/summaries.hpp>
 #include <otn/v1/referrer/adaptor.hpp>
-
-#include <otn/v1/element/traits.hpp>
-#include <otn/v1/basis/traits.hpp>
-#include <otn/v1/ownership/traits.hpp>
-#include <otn/v1/multiplicity/traits.hpp>
-#include <otn/v1/deleter/traits.hpp>
 
 namespace otn
 {
@@ -49,26 +42,31 @@ struct adaptor<To, Token, std::enable_if_t<base::is_token_v<Token>>>
     : protected Token::accessor
 {
 protected:
-    using referrer_summary =
-        summaries::referrer<otn::traits::element_t<Token>,
-                            spec::brief<otn::traits::basis_t<Token>,
-                                        otn::traits::ownership_t<Token>,
-                                        otn::traits::multiplicity_t<Token>,
-                                        otn::traits::deleter_t<Token>>>;
-    using referrer_type = typename referrer_summary::type;
+    using typename Token::accessor::referrer_type;
+    using referrer_adaptor = adaptor<To, referrer_type>;
 
 public:
-    static decltype(auto) adapt(const Token& from) noexcept
-    {
-        return adaptor<To, referrer_type>::adapt(
-            adaptor{}.referrer(from));
-    }
+    static constexpr bool is_copy_constructible =
+        referrer_adaptor::is_copy_constructible;
+    static constexpr bool is_move_constructible =
+        referrer_adaptor::is_move_constructible;
+    static constexpr bool is_copy_assignable =
+        referrer_adaptor::is_copy_assignable;
+    static constexpr bool is_move_assignable =
+        referrer_adaptor::is_move_assignable;
 
-    static decltype(auto) adapt(Token && from) noexcept
-    {
-        return adaptor<To, referrer_type>::adapt(
-            std::move(adaptor{}.referrer(from)));
-    }
+    static constexpr bool is_nothrow_copy_constructible =
+        referrer_adaptor::is_nothrow_copy_constructible;
+    static constexpr bool is_nothrow_move_constructible =
+        referrer_adaptor::is_nothrow_move_constructible;
+
+    static To
+    adapt(const Token& from) noexcept(is_nothrow_copy_constructible)
+    { return referrer_adaptor::adapt(adaptor{}.referrer(from)); }
+
+    static To
+    adapt(Token&& from) noexcept(is_nothrow_move_constructible)
+    { return referrer_adaptor::adapt(std::move(adaptor{}.referrer(from))); }
 };
 
 } // namespace referrer

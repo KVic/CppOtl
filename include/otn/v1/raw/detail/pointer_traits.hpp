@@ -40,6 +40,14 @@ struct pointer_traits<otn::raw::unified_single<T>>
     : pointer_traits<otn::base::token<T, otn::spec::raw::unified_single>> {};
 
 template <class T>
+struct pointer_traits<otn::raw::unique_optional<T>>
+    : pointer_traits<otn::base::token<T, otn::spec::raw::unique_optional>> {};
+
+template <class T>
+struct pointer_traits<otn::raw::unique_single<T>>
+    : pointer_traits<otn::base::token<T, otn::spec::raw::unique_single>> {};
+
+template <class T>
 struct pointer_traits<otn::raw::weak_optional<T>>
     : pointer_traits<otn::base::token<T, otn::spec::raw::weak_optional>> {};
 

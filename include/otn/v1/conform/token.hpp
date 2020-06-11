@@ -55,8 +55,13 @@ struct specify_weak
 template <class Token>
 using weak_t = typename specify_weak<Token>::type;
 
+#ifdef __cpp_concepts
+template <class Token>
+requires(is_token_v<Token>)
+#else
 template <class Token,
           OTN_CONCEPT_REQUIRES(is_token_v<Token>)>
+#endif
 inline
 auto weak(Token&& token)
 {

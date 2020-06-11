@@ -47,51 +47,36 @@ namespace conversion
 // M - Multiplicity
 
 // ----- copy construction & assignment ----------------------------------------
-// raw::unified_any<T> <- cpp_lang::unified_any<Y>
-template <class TM,
-          class YM>
-struct
-property<copy_construction,
-         basis::raw, ownership::unified, TM,
-         basis::cpp_lang, ownership::unified, YM> : implicit_enabled {};
-
-// raw::weak_any<T> <- cpp_lang::some_any<Y>
+// raw::unified_any<T> <- cpp_lang::any_any<Y>
 template <class TM,
           class YO, class YM>
 struct
 property<copy_construction,
+         basis::raw, ownership::unified, TM,
+         basis::cpp_lang, YO, YM> : implicit_enabled {};
+
+// raw::weak_any<T> <- cpp_lang::unified_unknown<Y>
+template <class TM>
+struct
+property<copy_construction,
          basis::raw, ownership::weak, TM,
-         basis::cpp_lang, YO, YM>
-    : property<copy_construction,
-               basis::raw, ownership::unified, TM,
-               basis::cpp_lang, YO, YM> {};
+         basis::cpp_lang, ownership::unified, multiplicity::unknown> : explicit_enabled {};
 // ----- copy construction & assignment ----------------------------------------
 
 // ----- copy conversion -------------------------------------------------------
-// cpp_lang::unified_unknown<Y> <- raw::unified_any<T>
-template <class TM>
+// cpp_lang::unified_unknown<Y> <- raw::any_any<T>
+template <class TO, class TM>
 struct
 property<copy_conversion,
-         basis::raw, ownership::unified, TM,
+         basis::raw, TO, TM,
          basis::cpp_lang, ownership::unified, multiplicity::unknown> : explicit_enabled {};
 
-// cpp_lang::unified_optional<Y> <- raw::unified_any<T>
-template <class TM>
+// cpp_lang::unified_optional<Y> <- raw::any_any<T>
+template <class TO, class TM>
 struct
 property<copy_conversion,
-         basis::raw, ownership::unified, TM,
+         basis::raw, TO, TM,
          basis::cpp_lang, ownership::unified, multiplicity::optional> : implicit_enabled {};
-
-// cpp_lang::some_any<Y> <- raw::weak_any<T>
-template <class TM,
-          class YO, class YM>
-struct
-property<copy_conversion,
-         basis::raw, ownership::weak, TM,
-         basis::cpp_lang, YO, YM>
-    : property<copy_conversion,
-               basis::raw, ownership::unified, TM,
-               basis::cpp_lang, YO, YM> {};
 // ----- copy conversion -------------------------------------------------------
 
 // ----- move construction & assignment ----------------------------------------
@@ -103,43 +88,40 @@ property<move_construction,
          basis::raw, ownership::unified, TM,
          basis::cpp_lang, ownership::unified, YM> : implicit_enabled {};
 
-// raw::weak_any<T> <- cpp_lang::some_any<Y>
-template <class TM,
-          class YO, class YM>
+// raw::weak_any<T> <- cpp_lang::unified_unknown<Y>
+template <class TM>
 struct
 property<move_construction,
          basis::raw, ownership::weak, TM,
-         basis::cpp_lang, YO, YM>
-    : property<move_construction,
-               basis::raw, ownership::unified, TM,
-               basis::cpp_lang, YO, YM> {};
+         basis::cpp_lang, ownership::unified, multiplicity::unknown> : explicit_enabled {};
 // ----- move construction & assignment ----------------------------------------
 
 // ----- move conversion -------------------------------------------------------
-// cpp_lang::unified_unknown<Y> <- raw::unified_any<T>
+// cpp_lang::unified_unknown<Y> <- raw::some_any<T>
 template <class TM>
 struct
 property<move_conversion,
          basis::raw, ownership::unified, TM,
          basis::cpp_lang, ownership::unified, multiplicity::unknown> : explicit_enabled {};
 
-// cpp_lang::unified_optional<Y> <- raw::unified_any<T>
+template <class TM>
+struct
+property<move_conversion,
+         basis::raw, ownership::weak, TM,
+         basis::cpp_lang, ownership::unified, multiplicity::unknown> : explicit_enabled {};
+
+// cpp_lang::unified_optional<Y> <- raw::some_any<T>
 template <class TM>
 struct
 property<move_conversion,
          basis::raw, ownership::unified, TM,
          basis::cpp_lang, ownership::unified, multiplicity::optional> : implicit_enabled {};
 
-// cpp_lang::some_any<Y> <- raw::weak_any<T>
-template <class TM,
-          class YO, class YM>
+template <class TM>
 struct
 property<move_conversion,
          basis::raw, ownership::weak, TM,
-         basis::cpp_lang, YO, YM>
-    : property<move_conversion,
-               basis::raw, ownership::unified, TM,
-               basis::cpp_lang, YO, YM> {};
+         basis::cpp_lang, ownership::unified, multiplicity::optional> : implicit_enabled {};
 // ----- move conversion -------------------------------------------------------
 
 } // namespace conversion

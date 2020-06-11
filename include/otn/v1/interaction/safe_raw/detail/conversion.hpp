@@ -47,54 +47,65 @@ namespace conversion
 // M - Multiplicity
 
 // ----- copy construction & assignment ----------------------------------------
-// raw::unified_any<Y> <- safe::unified_any<T>
-template <class TM,
-          class YM>
-struct
-property<copy_construction,
-         basis::raw, ownership::unified, TM,
-         basis::safe, ownership::unified, YM> : implicit_enabled {};
-
-// raw::unified_any<Y> <- safe::unique_any<T>
-template <class TM,
-          class YM>
-struct
-property<copy_construction,
-         basis::raw, ownership::unified, TM,
-         basis::safe, ownership::unique, YM> : implicit_enabled {};
-
-// raw::unified_any<Y> <- safe::shared_any<T>
-template <class TM,
-          class YM>
-struct
-property<copy_construction,
-         basis::raw, ownership::unified, TM,
-         basis::safe, ownership::shared, YM> : implicit_enabled {};
-
-// raw::unified_any<Y> <- safe::weak_any<T>
-template <class TM,
-          class YM>
-struct
-property<copy_construction,
-         basis::raw, ownership::unified, TM,
-         basis::safe, ownership::weak, YM> : implicit_enabled {};
-
-// raw::weak_any<Y> <- safe::some_any<T>
+// raw::unified_any<Y> <- safe::any_any<T>
 template <class TM,
           class YO, class YM>
 struct
 property<copy_construction,
+         basis::raw, ownership::unified, TM,
+         basis::safe, YO, YM> : implicit_enabled {};
+
+// raw::weak_any<Y> <- safe::some_any<T>
+template <class TM,
+          class YM>
+struct
+property<copy_construction,
          basis::raw, ownership::weak, TM,
-         basis::safe, YO, YM>
-    : property<copy_construction,
-               basis::raw, ownership::unified, TM,
-               basis::safe, YO, YM> {};
+         basis::safe, ownership::unique, YM> : implicit_enabled {};
+
+template <class TM,
+          class YM>
+struct
+property<copy_construction,
+         basis::raw, ownership::weak, TM,
+         basis::safe, ownership::shared, YM> : implicit_enabled {};
+
+template <class TM,
+          class YM>
+struct
+property<copy_construction,
+         basis::raw, ownership::weak, TM,
+         basis::safe, ownership::weak, YM> : implicit_enabled {};
 // ----- copy construction & assignment ----------------------------------------
 
 // ----- copy conversion -------------------------------------------------------
 // ----- copy conversion -------------------------------------------------------
 
 // ----- move construction & assignment ----------------------------------------
+// safe::unified_any<T> <- raw::unique_any<Y>
+template <class TM,
+          class YM>
+struct
+property<move_construction,
+         basis::safe, ownership::unified, TM,
+         basis::raw, ownership::unique, YM> : implicit_enabled {};
+
+// safe::unique_any<T> <- raw::unique_any<Y>
+template <class TM,
+          class YM>
+struct
+property<move_construction,
+         basis::safe, ownership::unique, TM,
+         basis::raw, ownership::unique, YM> : implicit_enabled {};
+
+// safe::shared_any<T> <- raw::unique_any<Y>
+template <class TM,
+          class YM>
+struct
+property<move_construction,
+         basis::safe, ownership::shared, TM,
+         basis::raw, ownership::unique, YM> : implicit_enabled {};
+
 // raw::unified_any<Y> <- safe::weak_any<T>
 template <class TM,
           class YM>

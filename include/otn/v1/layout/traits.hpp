@@ -24,12 +24,9 @@
 
 #pragma once
 
-#include <otn/v1/base/factory.hpp>
+#include <otn/v1/layout/names.hpp>
 
-#include <otn/v1/basis/traits.hpp>
-#include <otn/v1/cpp_lang/basis.hpp>
-#include <otn/v1/std_smart/basis.hpp>
-#include <otn/v1/referrer/adaptor.hpp>
+#include <otn/v1/support/type_traits.hpp>
 
 namespace otn
 {
@@ -37,25 +34,21 @@ namespace otn
 inline namespace v1
 {
 
-namespace base
+namespace traits
 {
 
-// cpp_lang::some_any<T> <- std_smart::some_any<Y>
-template <class Token, class Referrer>
-struct factory<Token, Referrer,
-               std::enable_if_t<basis_is_v<Token, basis::cpp_lang>
-                                && basis_is_v<Referrer, basis::std_smart>>>
-{
-    static auto make(const Referrer& from) OTN_NOEXCEPT(
-        noexcept(referrer::adapt<Token>(from)))
-    { return referrer::adapt<Token>(from); }
+template <class Token, class = void>
+struct layout
+{ using type = otn::layout::unknown; };
 
-    static auto make(Referrer&& from) OTN_NOEXCEPT(
-        noexcept(referrer::adapt<Token>(std::move(from))))
-    { return referrer::adapt<Token>(std::move(from)); }
-};
+template <class Token>
+using layout_t = typename layout<otn::remove_cvref_t<Token>>::type;
 
-} // namespace base
+} // namespace traits
+
+template <class Token, class layout>
+inline constexpr bool layout_is_v =
+    std::is_same_v<traits::layout_t<Token>, layout>;
 
 } // namespace v1
 

@@ -26,12 +26,7 @@
 
 // *INDENT-OFF*
 
-#if defined (__cpp_concepts)
-#define OTN_CONCEPT_SPECIFIER concept
-#else
-#define OTN_CONCEPT_SPECIFIER inline constexpr bool
-#endif
-
+#ifndef __cpp_concepts
 #define OTN_WORD_CONCAT_EXT(Word_1, Word_2) Word_1 ## Word_2
 #define OTN_WORD_CONCAT(Word_1, Word_2) OTN_WORD_CONCAT_EXT(Word_1, Word_2)
 
@@ -46,5 +41,7 @@ typename std::enable_if_t<                                                     \
 template <bool OTN_NAME_BY_LINE(_OTN_Requires_) = true,                        \
           typename std::enable_if_t<                                           \
               (__VA_ARGS__) && OTN_NAME_BY_LINE(_OTN_Requires_), int> = 0>     \
+
+#endif // __cpp_concepts
 
 // *INDENT-ON*

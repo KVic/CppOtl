@@ -24,9 +24,8 @@
 
 #pragma once
 
-#include <otn/v1/support/noexcept.hpp>
-
-#include <utility>
+#include <otn/v1/collection/detail/iterator.hpp>
+#include <otn/v1/cpp_lang/origin.hpp>
 
 namespace otn
 {
@@ -34,31 +33,36 @@ namespace otn
 inline namespace v1
 {
 
-namespace base
+namespace cpp_lang
 {
 
-template <class Token, class Referrer, class = void>
-struct factory
-{
-    static Token make(const Referrer& from) OTN_NOEXCEPT(
-        noexcept(Token { from }))
-    { return Token{from}; }
+// T - Type
 
-    static Token make(Referrer&& from) OTN_NOEXCEPT(
-        noexcept(Token { std::move(from) }))
-    { return Token{std::move(from)}; }
-};
+// unified_optional
+template <class T>
+inline
+collection::iterator<unified_optional<T>>
+begin(unified_optional<T>& token) noexcept
+{ return collection::iterator<unified_optional<T>>{token}; }
 
-template <class Token, class Referrer>
-inline Token make(Referrer&& from) OTN_NOEXCEPT(
-    noexcept(factory<Token, otn::remove_cvref_t<Referrer>>::make(
-                 std::forward<Referrer>(from))))
-{
-    return factory<Token, otn::remove_cvref_t<Referrer>>::make(
-        std::forward<Referrer>(from));
-}
+template <class T>
+constexpr collection::iterator<unified_optional<T>>
+end(unified_optional<T>&) noexcept
+{ return collection::iterator<unified_optional<T>>{}; }
 
-} // namespace base
+// unified_optional const
+template <class T>
+inline
+collection::iterator<const unified_optional<T>>
+begin(const unified_optional<T>& token) noexcept
+{ return collection::iterator<const unified_optional<T>>{token}; }
+
+template <class T>
+constexpr collection::iterator<const unified_optional<T>>
+end(const unified_optional<T>&) noexcept
+{ return collection::iterator<const unified_optional<T>>{}; }
+
+} // namespace cpp_lang
 
 } // namespace v1
 

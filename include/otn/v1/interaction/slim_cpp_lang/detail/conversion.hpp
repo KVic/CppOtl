@@ -56,14 +56,14 @@ property<copy_construction,
 // ----- copy construction & assignment ----------------------------------------
 
 // ----- copy conversion -------------------------------------------------------
-// cpp_lang::unified_unknown<Y> <- slim::unique_any<T>
+// cpp_lang::unified_unknown<Y> <- slim::some_any<T>
 template <class TM>
 struct
 property<copy_conversion,
          basis::slim, ownership::unique, TM,
          basis::cpp_lang, ownership::unified, multiplicity::unknown> : explicit_enabled {};
 
-// cpp_lang::unified_optional<Y> <- slim::unique_any<T>
+// cpp_lang::unified_optional<Y> <- slim::some_any<T>
 template <class TM>
 struct
 property<copy_conversion,
@@ -79,6 +79,9 @@ property<move_construction,
          basis::slim, ownership::unique, TM,
          basis::cpp_lang, ownership::unified, multiplicity::unknown> : explicit_enabled {};
 // ----- move construction & assignment ----------------------------------------
+
+// ----- move conversion -------------------------------------------------------
+// ----- move conversion -------------------------------------------------------
 
 } // namespace conversion
 

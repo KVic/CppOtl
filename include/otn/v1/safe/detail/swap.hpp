@@ -37,40 +37,166 @@ namespace safe
 
 // T - Type
 
+// unified_optional
+#ifdef __cpp_concepts
 template <class T>
+requires(unified_optional<T>::is_swappable)
+#else
+template <class T, OTN_CONCEPT_REQUIRES(unified_optional<T>::is_swappable)>
+#endif
 inline void swap(unified_optional<T>& a,
-                 unified_optional<T>& b) noexcept
+                 unified_optional<T>& b) noexcept(unified_optional<T>::is_nothrow_swappable)
 { a.swap(b); }
 
+#ifdef __cpp_concepts
 template <class T>
+requires(!unified_optional<T>::is_swappable)
+void swap(unified_optional<T>& a, unified_optional<T>& b) = delete;
+#else
+template <class T, OTN_CONCEPT_REQUIRES(!unified_optional<T>::is_swappable)>
+void swap(unified_optional<T>& a, unified_optional<T>& b) = delete;
+#endif
+
+template <class T, class Y>
+void swap(unified_optional<T>& a, unified_optional<Y>& b) = delete;
+
+// unified_single
+#ifdef __cpp_concepts
+template <class T>
+requires(unified_single<T>::is_swappable)
+#else
+template <class T, OTN_CONCEPT_REQUIRES(unified_single<T>::is_swappable)>
+#endif
 inline void swap(unified_single<T>& a,
-                 unified_single<T>& b) noexcept
+                 unified_single<T>& b) noexcept(unified_single<T>::is_nothrow_swappable)
 { a.swap(b); }
 
+#ifdef __cpp_concepts
 template <class T>
+requires(!unified_single<T>::is_swappable)
+void swap(unified_single<T>& a, unified_single<T>& b) = delete;
+#else
+template <class T, OTN_CONCEPT_REQUIRES(!unified_single<T>::is_swappable)>
+void swap(unified_single<T>& a, unified_single<T>& b) = delete;
+#endif
+
+template <class T, class Y>
+void swap(unified_single<T>& a, unified_single<Y>& b) = delete;
+
+// unique_optional
+#ifdef __cpp_concepts
+template <class T>
+requires(unique_optional<T>::is_swappable)
+#else
+template <class T, OTN_CONCEPT_REQUIRES(unique_optional<T>::is_swappable)>
+#endif
 inline void swap(unique_optional<T>& a,
-                 unique_optional<T>& b) noexcept
+                 unique_optional<T>& b) noexcept(unique_optional<T>::is_nothrow_swappable)
 { a.swap(b); }
 
+#ifdef __cpp_concepts
 template <class T>
+requires(!unique_optional<T>::is_swappable)
+void swap(unique_optional<T>& a, unique_optional<T>& b) = delete;
+#else
+template <class T, OTN_CONCEPT_REQUIRES(!unique_optional<T>::is_swappable)>
+void swap(unique_optional<T>& a, unique_optional<T>& b) = delete;
+#endif
+
+template <class T, class Y>
+void swap(unique_optional<T>& a, unique_optional<Y>& b) = delete;
+
+// unique_single
+#ifdef __cpp_concepts
+template <class T>
+requires(unique_single<T>::is_swappable)
+#else
+template <class T, OTN_CONCEPT_REQUIRES(unique_single<T>::is_swappable)>
+#endif
 inline void swap(unique_single<T>& a,
-                 unique_single<T>& b) noexcept
+                 unique_single<T>& b) noexcept(unique_single<T>::is_nothrow_swappable)
 { a.swap(b); }
 
+#ifdef __cpp_concepts
 template <class T>
+requires(!unique_single<T>::is_swappable)
+void swap(unique_single<T>& a, unique_single<T>& b) = delete;
+#else
+template <class T, OTN_CONCEPT_REQUIRES(!unique_single<T>::is_swappable)>
+void swap(unique_single<T>& a, unique_single<T>& b) = delete;
+#endif
+
+template <class T, class Y>
+void swap(unique_single<T>& a, unique_single<Y>& b) = delete;
+
+// shared_optional
+#ifdef __cpp_concepts
+template <class T>
+requires(shared_optional<T>::is_swappable)
+#else
+template <class T, OTN_CONCEPT_REQUIRES(shared_optional<T>::is_swappable)>
+#endif
 inline void swap(shared_optional<T>& a,
-                 shared_optional<T>& b) noexcept
+                 shared_optional<T>& b) noexcept(shared_optional<T>::is_nothrow_swappable)
 { a.swap(b); }
 
+#ifdef __cpp_concepts
 template <class T>
+requires(!shared_optional<T>::is_swappable)
+void swap(shared_optional<T>& a, shared_optional<T>& b) = delete;
+#else
+template <class T, OTN_CONCEPT_REQUIRES(!shared_optional<T>::is_swappable)>
+void swap(shared_optional<T>& a, shared_optional<T>& b) = delete;
+#endif
+
+template <class T, class Y>
+void swap(shared_optional<T>& a, shared_optional<Y>& b) = delete;
+
+// shared_single
+#ifdef __cpp_concepts
+template <class T>
+requires(shared_single<T>::is_swappable)
+#else
+template <class T, OTN_CONCEPT_REQUIRES(shared_single<T>::is_swappable)>
+#endif
 inline void swap(shared_single<T>& a,
-                 shared_single<T>& b) noexcept
+                 shared_single<T>& b) noexcept(shared_single<T>::is_nothrow_swappable)
 { a.swap(b); }
 
+#ifdef __cpp_concepts
 template <class T>
+requires(!shared_single<T>::is_swappable)
+void swap(shared_single<T>& a, shared_single<T>& b) = delete;
+#else
+template <class T, OTN_CONCEPT_REQUIRES(!shared_single<T>::is_swappable)>
+void swap(shared_single<T>& a, shared_single<T>& b) = delete;
+#endif
+
+template <class T, class Y>
+void swap(shared_single<T>& a, shared_single<Y>& b) = delete;
+
+// weak_optional
+#ifdef __cpp_concepts
+template <class T>
+requires(weak_optional<T>::is_swappable)
+#else
+template <class T, OTN_CONCEPT_REQUIRES(weak_optional<T>::is_swappable)>
+#endif
 inline void swap(weak_optional<T>& a,
-                 weak_optional<T>& b) noexcept
+                 weak_optional<T>& b) noexcept(weak_optional<T>::is_nothrow_swappable)
 { a.swap(b); }
+
+#ifdef __cpp_concepts
+template <class T>
+requires(!weak_optional<T>::is_swappable)
+void swap(weak_optional<T>& a, weak_optional<T>& b) = delete;
+#else
+template <class T, OTN_CONCEPT_REQUIRES(!weak_optional<T>::is_swappable)>
+void swap(weak_optional<T>& a, weak_optional<T>& b) = delete;
+#endif
+
+template <class T, class Y>
+void swap(weak_optional<T>& a, weak_optional<Y>& b) = delete;
 
 } // namespace safe
 

@@ -74,6 +74,40 @@ public:
 };
 
 template <class T>
+class unique_optional : public base::token<T, spec::raw::unique_optional>
+{
+private:
+    using token = base::token<T, spec::raw::unique_optional>;
+
+public:
+    using token::token;
+    using token::operator=;
+
+    ~unique_optional() = default;
+    unique_optional(const unique_optional&) = default;
+    unique_optional(unique_optional&&)      = default;
+    unique_optional& operator=(const unique_optional&) = default;
+    unique_optional& operator=(unique_optional&&)      = default;
+};
+
+template <class T>
+class unique_single : public base::token<T, spec::raw::unique_single>
+{
+private:
+    using token = base::token<T, spec::raw::unique_single>;
+
+public:
+    using token::token;
+    using token::operator=;
+
+    ~unique_single() = default;
+    unique_single(const unique_single&) = default;
+    unique_single(unique_single&&)      = default;
+    unique_single& operator=(const unique_single&) = default;
+    unique_single& operator=(unique_single&&)      = default;
+};
+
+template <class T>
 class weak_optional : public base::token<T, spec::raw::weak_optional>
 {
 private:

@@ -36,14 +36,24 @@ inline namespace v1
 namespace raw
 {
 
+#ifdef __cpp_concepts
+template <class Token>
+requires(basis_is_v<Token, basis::raw>)
+#else
 template <class Token,
           OTN_CONCEPT_REQUIRES(basis_is_v<Token, basis::raw>)>
+#endif
 inline
 collection::iterator<Token> begin(Token& token) noexcept
 { return collection::iterator<Token>{token}; }
 
+#ifdef __cpp_concepts
+template <class Token>
+requires(basis_is_v<Token, basis::raw>)
+#else
 template <class Token,
           OTN_CONCEPT_REQUIRES(basis_is_v<Token, basis::raw>)>
+#endif
 constexpr collection::iterator<Token> end(Token&) noexcept
 { return collection::iterator<Token>{}; }
 

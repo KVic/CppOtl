@@ -47,7 +47,7 @@ namespace conversion
 // M - Multiplicity
 
 // ----- copy construction & assignment ----------------------------------------
-// raw::unified_any<Y> <- slim::unique_any<T>
+// raw::unified_any<Y> <- slim::some_any<T>
 template <class TM,
           class YM>
 struct
@@ -68,6 +68,21 @@ property<copy_construction,
 // ----- copy conversion -------------------------------------------------------
 
 // ----- move construction & assignment ----------------------------------------
+// slim::unique_any<T> <- raw::unique_any<Y>
+template <class TM,
+          class YM>
+struct
+property<move_construction,
+         basis::slim, ownership::unique, TM,
+         basis::raw, ownership::unique, YM> : implicit_enabled {};
+
+// raw::unique_any<T> <- slim::unique_any<Y>
+template <class TM,
+          class YM>
+struct
+property<move_construction,
+         basis::raw, ownership::unique, TM,
+         basis::slim, ownership::unique, YM> : implicit_enabled {};
 // ----- move construction & assignment ----------------------------------------
 
 // ----- move conversion -------------------------------------------------------

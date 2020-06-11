@@ -24,7 +24,9 @@
 
 #pragma once
 
-#include <otn/v1/proxy/detail/list.hpp>
+#include <otn/v1/cpp_lang/internal/storage_single.hpp>
+
+#include <memory>
 
 namespace otn
 {
@@ -32,46 +34,50 @@ namespace otn
 inline namespace v1
 {
 
-namespace proxy
+namespace cpp_lang
 {
 
-template <class ... Tokens>
-class list_iterator
+template <class T>
+struct thin_single
 {
-public:
-    using difference_type   = std::ptrdiff_t;
-    using value_type        = const list<Tokens...>;
-    using pointer           = value_type *;
-    using reference         = value_type&;
-    using iterator_category = std::forward_iterator_tag;
+    using element_type = T;
 
-    list_iterator() = default;
+    internal::storage_single<element_type> storage{};
 
-    explicit list_iterator(
-        const list<Tokens...>& proxies) noexcept
-        : m_proxies{proxies ? std::addressof(proxies) : nullptr}
-    {}
+    // Modifiers
+    static constexpr bool is_swappable =
+        std::is_move_constructible_v<element_type>
+        && std::is_swappable_v<element_type>;
+    static constexpr bool is_nothrow_swappable =
+        std::is_nothrow_move_constructible_v<element_type>
+        && std::is_nothrow_swappable_v<element_type>;
 
-    constexpr explicit operator bool() const noexcept
-    { return static_cast<bool>(m_proxies); }
+    void swap(thin_single& other) noexcept(is_nothrow_swappable)
+    {
+        using std::swap;
+        swap(storage, other.storage);
+    }
 
-    reference      operator*() const noexcept
-    { return *m_proxies; }
-    list_iterator& operator++() noexcept
-    { m_proxies = nullptr; return *this; }
-    constexpr list_iterator operator++(int) const noexcept
-    { return list_iterator{}; }
+    // Conversion functions
+    template <class Y>
+    constexpr explicit operator Y*() const & noexcept
+    { return std::addressof(**this); }
 
-    bool operator==(const list_iterator& other) const noexcept
-    { return other.m_proxies == m_proxies; }
-    bool operator!=(const list_iterator& other) const noexcept
-    { return !operator==(other); }
+    template <class Y>
+    operator Y*() && = delete;
 
-private:
-    pointer m_proxies{};
+    // Observers
+    constexpr element_type& operator*() const noexcept
+    { return storage.value; }
+
+    constexpr element_type* operator->() const noexcept
+    { return static_cast<element_type*>(*this); }
+
+    explicit constexpr operator bool() const noexcept
+    { return true; }
 };
 
-} // namespace proxy
+} // namespace cpp_lang
 
 } // namespace v1
 

@@ -25,8 +25,10 @@
 #pragma once
 
 #include <otn/v1/referrer/rules.hpp>
+#include <otn/v1/referrer/factory.hpp>
 
 #include <otn/v1/raw/basis.hpp>
+#include <otn/v1/cpp_lang/basis.hpp>
 #include <otn/v1/cpp_lang/origin.hpp>
 
 #include <otn/v1/spec/brief.hpp>
@@ -53,6 +55,14 @@ struct specify<T, spec::brief<basis::raw, ownership::unified, multiplicity::opti
 template <class T, class D>
 struct specify<T, spec::brief<basis::raw, ownership::unified, multiplicity::single, D>, false>
 { using type = cpp_lang::unified_unknown<T>; };
+
+template <class T, class D>
+struct specify<T, spec::brief<basis::raw, ownership::unique, multiplicity::optional, D>, false>
+{ using type = cpp_lang::thin_optional<T>; };
+
+template <class T, class D>
+struct specify<T, spec::brief<basis::raw, ownership::unique, multiplicity::single, D>, false>
+{ using type = cpp_lang::thin_single<T>; };
 
 template <class T, class M, class D>
 struct specify<T, spec::brief<basis::raw, ownership::weak, M, D>, false>

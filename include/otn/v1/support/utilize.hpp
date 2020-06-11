@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include <otn/v1/support/concept.hpp>
+
 #include <utility>
 
 namespace otn
@@ -32,12 +34,28 @@ namespace otn
 inline namespace v1
 {
 
+#ifdef __cpp_concepts
 template <class Token>
+requires(std::is_move_constructible_v<Token>)
+#else
+template <class Token,
+          OTN_CONCEPT_REQUIRES(std::is_move_constructible_v<Token>)>
+#endif
 inline void utilize(Token&& token) noexcept
 { [[maybe_unused]] Token trash{std::move(token)}; }
 
+#ifdef __cpp_concepts
 template <class Token>
-inline void utilize(Token& token) = delete;
+requires(!std::is_move_constructible_v<Token>)
+void utilize(Token&& token) = delete;
+#else
+template <class Token,
+          OTN_CONCEPT_REQUIRES(!std::is_move_constructible_v<Token>)>
+void utilize(Token&& token) = delete;
+#endif
+
+template <class Token>
+void utilize(Token& token) = delete;
 
 } // namespace v1
 

@@ -25,12 +25,10 @@
 #pragma once
 
 #include <otn/v1/referrer/adaptor.hpp>
+#include <otn/v1/referrer/adaptor_traits.hpp>
 #include <otn/v1/referrer/factory.hpp>
 
-#include <otn/v1/std_smart/basis.hpp>
 #include <otn/v1/std_smart/origin.hpp>
-
-#include <otn/v1/ownership/names.hpp>
 
 namespace otn
 {
@@ -46,36 +44,57 @@ namespace referrer
 template <class T, class Y>
 struct adaptor<std_smart::shared_optional<T>,
                std_smart::weak_optional<Y>>
+    : traits_divided_any_divided_observer<T, Y>
 {
-    static auto adapt(const std_smart::weak_optional<Y>& from) noexcept
-    { return from.lock(); }
+    static std_smart::shared_optional<T>
+    adapt(const std_smart::weak_optional<Y>& from) noexcept
+    { return std_smart::shared_optional<T>{from.lock()}; }
 
-    static auto adapt(std_smart::weak_optional<Y>&& from) noexcept
+    static std_smart::shared_optional<T>
+    adapt(std_smart::weak_optional<Y>&& from) noexcept
     {
-        auto proxy = from.lock();
-        from.reset();
-        return proxy;
+        std_smart::weak_optional<Y> temp{std::move(from)};
+        return std_smart::shared_optional<T>{temp.lock()};
     }
 };
 
-template <>
-struct factory<basis::std_smart>
+template <class T, class Deleter>
+struct factory<std_smart::unique_optional<T, Deleter>>
 {
-    template <class T, class BriefSpec, class ... Args>
-    static auto make(Args&& ... args)
+    template <class Y, class ... Args>
+    static constexpr bool is_constructible =
+        (  std::is_constructible_v<Y, Args ...>
+        && is_elements_convertible<Y, T>);
+
+    template <class Y, class ... Args>
+    static constexpr bool is_nothrow_constructible = false;
+
+    template <class Y, class ... Args>
+    static std_smart::unique_optional<T, Deleter>
+    make(Args&& ... args)
     {
-        if constexpr (std::is_same_v<typename BriefSpec::ownership,
-                                     ownership::unique>)
-            return std_smart::unique_optional<T, typename BriefSpec::deleter>{
-                new T(std::forward<Args>(args) ...)};
-        else
-        if constexpr (std::is_same_v<typename BriefSpec::ownership,
-                                     ownership::shared>)
-            return std::make_shared<T>(std::forward<Args>(args) ...);
-        else
-            static_assert(sizeof(T) == -1,
-                          "referrer::factory<basis::std_smart> "
-                          "is defined for the BriefSpec::ownership");
+        return std_smart::unique_optional<T, Deleter>{
+            new Y(std::forward<Args>(args) ...)};
+    }
+};
+
+template <class T>
+struct factory<std_smart::shared_optional<T>>
+{
+    template <class Y, class ... Args>
+    static constexpr bool is_constructible =
+        (  std::is_constructible_v<Y, Args ...>
+        && is_elements_convertible<Y, T>);
+
+    template <class Y, class ... Args>
+    static constexpr bool is_nothrow_constructible = false;
+
+    template <class Y, class ... Args>
+    static std_smart::shared_optional<T>
+    make(Args&& ... args)
+    {
+        return std_smart::shared_optional<T>{
+            std::make_shared<Y>(std::forward<Args>(args) ...)};
     }
 };
 

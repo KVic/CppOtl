@@ -38,15 +38,55 @@ namespace slim
 // T - Type
 // D - Deleter
 
+// unique_optional
+#ifdef __cpp_concepts
 template <class T, class D>
+requires(unique_optional<T, D>::is_swappable)
+#else
+template <class T, class D,
+          OTN_CONCEPT_REQUIRES(unique_optional<T, D>::is_swappable)>
+#endif
 inline void swap(unique_optional<T, D>& a,
-                 unique_optional<T, D>& b) noexcept
+                 unique_optional<T, D>& b) noexcept(unique_optional<T, D>::is_nothrow_swappable)
 { a.swap(b); }
 
+#ifdef __cpp_concepts
 template <class T, class D>
+requires(!unique_optional<T, D>::is_swappable)
+void swap(unique_optional<T, D>& a, unique_optional<T, D>& b) = delete;
+#else
+template <class T, class D,
+          OTN_CONCEPT_REQUIRES(!unique_optional<T, D>::is_swappable)>
+void swap(unique_optional<T, D>& a, unique_optional<T, D>& b) = delete;
+#endif
+
+template <class T, class DT, class Y, class DY>
+void swap(unique_optional<T, DT>& a, unique_optional<Y, DY>& b) = delete;
+
+// unique_single
+#ifdef __cpp_concepts
+template <class T, class D>
+requires(unique_single<T, D>::is_swappable)
+#else
+template <class T, class D,
+          OTN_CONCEPT_REQUIRES(unique_single<T, D>::is_swappable)>
+#endif
 inline void swap(unique_single<T, D>& a,
-                 unique_single<T, D>& b) noexcept
+                 unique_single<T, D>& b) noexcept(unique_single<T, D>::is_nothrow_swappable)
 { a.swap(b); }
+
+#ifdef __cpp_concepts
+template <class T, class D>
+requires(!unique_single<T, D>::is_swappable)
+void swap(unique_single<T, D>& a, unique_single<T, D>& b) = delete;
+#else
+template <class T, class D,
+          OTN_CONCEPT_REQUIRES(!unique_single<T, D>::is_swappable)>
+void swap(unique_single<T, D>& a, unique_single<T, D>& b) = delete;
+#endif
+
+template <class T, class DT, class Y, class DY>
+void swap(unique_single<T, DT>& a, unique_single<Y, DY>& b) = delete;
 
 } // namespace slim
 

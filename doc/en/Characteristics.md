@@ -65,7 +65,7 @@ From the C++ point of view, a token with `weak` ownership is copyable and movabl
 
 From the C++ point of view, a token with `unified` ownership is copyable and movable. It is designed to be primarily used as a local variable to access an object linked to a token with other ownership or as a parameter of a function to transfer `unified` ownership of an object. 
 
-**Warning: Do not use `unified` ownership as a data member of a class!**
+**Warning: Do not use `unified` ownership as a data member of a class! Use `unified` ownership in the same use cases as a regular C++ reference `&`.**
 
 <a name="Multiplicity"></a>
 # Multiplicity
@@ -185,13 +185,13 @@ Tokens in the `safe` basis are *trackable*, can not be *dangling* and implements
 
 |`otn::safe`|implemented by|
 |---|---|
-|`unified[_single]<T>`|`std::shared_ptr<T>`|
-|`unified_optional<T>`|`std::shared_ptr<T>`|
 |`unique[_single]<T>`|`std::shared_ptr<T>`|
 |`unique_optional<T>`|`std::shared_ptr<T>`|
 |`shared[_single]<T>`|`std::shared_ptr<T>`|
 |`shared_optional<T>`|`std::shared_ptr<T>`|
 |`weak_optional<T>`|`std::weak_ptr<T>`|
+|`unified[_single]<T>`|`std::shared_ptr<T>`|
+|`unified_optional<T>`|`std::shared_ptr<T>`|
 
 <a name="SafeWeak"></a>
 The main difference of the `safe::unique`, `safe::shared`, `safe::weak` from the `std::unique_ptr`, `std::shared_ptr`, `std::weak_ptr` that it is possible to create the `safe::weak` both from the `safe::unique` and the `safe::shared`, while the `std::weak_ptr` can be created only from the `std::shared_ptr` and the `std::unique_ptr` does not have *trackable* *weak* counterpart.
@@ -347,14 +347,27 @@ The `slim::unique` is the analog of the `std::unique_ptr`, which can be `optiona
 <a name="Raw"></a>
 ## Raw
 
-Tokens in the `raw` basis are low-level, without RAII idiom, *untrackable* and can be *dangling*.
+Tokens in the `raw` basis are low-level, observers are without RAII idiom, *untrackable* and can be *dangling*.
 
 |`otn::raw`|implemented by|
 |---|---|
-|`unified[_single]<T>`|`T*`|
-|`unified_optional<T>`|`T*`|
+|`unique[_single]<T>`|`T`|
+|`unique_optional<T>`|`std::optional<T>`|
 |`weak[_single]<T>`|`T*`|
 |`weak_optional<T>`|`T*`|
+|`unified[_single]<T>`|`T*`|
+|`unified_optional<T>`|`T*`|
+
+`raw::unique` tokens are wrappers over raw C++ objects with `automatic` [storage duration](https://en.cppreference.com/w/cpp/language/storage_duration#Storage_duration). They are introduced to provide unified representation and access to raw C++ objects with other tokens. They simplify refactoring when the storage duration of an object changes (`automatic` <-> `dynamic`) in a variable or a data member of a class. Moving `raw::unique` tokens invalidate observers to them:
+
+```c++
+otn::raw::unique<some> a{otn::itself};
+otn::raw::weak<some>   w = a;
+otn::raw::unique<some> b{std::move(a)}; // Invalidates the 'w'.
+// The 'w' observes the moved-from object 'a'.
+```
+
+**It is the responsibility of a developer to ensure that `raw::unique` tokens do not have observers before moving or manually update observers after moving**.
 
 The `raw::unified` and `raw::weak` are wrappers over raw C++ pointers. They are represented to explicitly express `single` and `optional` multiplicity because the raw pointer `T*` is not `single` (it can be `nullptr`) nor `optional` (after move operation it is not "empty").
 
@@ -378,4 +391,4 @@ otn::unique<int>       d{w}; // Not compiles.
 otn::slim::unique<int> e{w}; // Not compiles.
 ```
 
-`raw` tokens are *untrackable* and can be *dangling* if a linked object is destroyed. **It is the responsibility of a developer to ensure that the object's lifetime is longer than the lifetime of the `raw` token**.
+`raw` observers are *untrackable* and can be *dangling* if a linked object is destroyed. **It is the responsibility of a developer to ensure that the object's lifetime is longer than the lifetime of the `raw` observer**.

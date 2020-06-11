@@ -87,6 +87,8 @@ template <class T, class ... Args>
 safe::shared_single<T> safe::make_shared(Args&& ... args);
 template <class T, class ... Args>
 slim::unique_single<T> slim::make_unique(Args&& ... args);
+template <class T, class ... Args>
+raw::unique_single<T> raw::make_unique(Args&& ... args);
 ```
 
 #### Helper classes

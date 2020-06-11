@@ -37,36 +37,10 @@ namespace summaries
 
 // T - Type
 
-template <class From, class To>
-static constexpr bool is_convertible_elements =
-    std::is_convertible_v<std::remove_reference_t<From>*,
-                          std::remove_reference_t<To>*>;
-
 template <class T>
 struct element
 {
     using type = T;
-
-    template <class Element>
-    static constexpr bool is_convertible_from =
-        is_convertible_elements<Element, type>;
-
-    template <class Element>
-    static constexpr bool is_convertible_to =
-        is_convertible_elements<type, Element>;
-
-    template <class Element>
-    static constexpr bool is_incompatible_with =
-        !is_convertible_elements<std::remove_const_t<Element>,
-                                 std::remove_const_t<type>>;
-
-    // Const incorrectness conversion: 'const Element* -> type*'.
-    template <class Element>
-    static constexpr bool is_const_incorrect_with =
-        std::is_const_v<Element>
-        && !std::is_const_v<type>
-        && is_convertible_elements<std::remove_const_t<Element>,
-                                   std::remove_const_t<type>>;
 };
 
 } // namespace summaries

@@ -50,20 +50,6 @@ template <class T, class M, class D>
 struct specify<T, spec::brief<basis::slim, ownership::unique, M, D>, false>
 { using type = std_smart::unique_optional<T>; };
 
-template <>
-struct factory<basis::slim>
-{
-    template <class T, class BriefSpec, class ... Args>
-    static auto make(Args&& ... args)
-    {
-        return referrer::make<T, spec::brief<basis::std_smart,
-                                             typename BriefSpec::ownership,
-                                             typename BriefSpec::multiplicity,
-                                             typename BriefSpec::deleter>>(
-            std::forward<Args>(args) ...);
-    }
-};
-
 } // namespace referrer
 
 } // namespace v1

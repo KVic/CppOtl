@@ -65,6 +65,21 @@ public:
     template <class U>
     using rebind = otn::base::token<U, Spec>;
 
+#ifdef __cpp_concepts
+    static element_type& to_value(const pointer& p) noexcept
+    requires(otn::is_direct_accessible_v<pointer>)
+    { return accessor{}.to_value(p); }
+
+    static element_type& to_value(const pointer& p)
+    requires(!otn::is_direct_accessible_v<pointer>) = delete;
+
+    static element_type* to_address(const pointer& p) noexcept
+    requires(otn::is_direct_accessible_v<pointer>)
+    { return accessor{}.to_address(p); }
+
+    static element_type* to_address(const pointer& p)
+    requires(otn::is_proxy_accessible_v<pointer>) = delete;
+#else
     OTN_CONCEPT_REQUIRES_(otn::is_direct_accessible_v<pointer>)
     static element_type& to_value(const pointer& p) noexcept
     { return accessor{}.to_value(p); }
@@ -78,6 +93,7 @@ public:
 
     OTN_CONCEPT_REQUIRES_(otn::is_proxy_accessible_v<pointer>)
     static element_type* to_address(const pointer& p) = delete;
+#endif
 };
 
 } // namespace std

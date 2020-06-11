@@ -46,7 +46,7 @@ namespace conversion
 // M - Multiplicity
 
 // ----- copy construction & assignment ----------------------------------------
-// cpp_lang::unified_unknown<T> <- cpp_lang::unified_some<Y>
+// cpp_lang::unified_unknown<T> <- cpp_lang::some_some<Y>
 template <>
 struct
 property<copy_construction,
@@ -59,7 +59,13 @@ property<copy_construction,
          basis::cpp_lang, ownership::unified, multiplicity::unknown,
          basis::cpp_lang, ownership::unified, multiplicity::optional> : implicit_enabled {};
 
-// cpp_lang::unified_optional<T> <- cpp_lang::unified_some<Y>
+template <class YM>
+struct
+property<copy_construction,
+         basis::cpp_lang, ownership::unified, multiplicity::unknown,
+         basis::cpp_lang, ownership::unique, YM> : explicit_enabled {};
+
+// cpp_lang::unified_optional<T> <- cpp_lang::some_some<Y>
 template <>
 struct
 property<copy_construction,
@@ -71,6 +77,12 @@ struct
 property<copy_construction,
          basis::cpp_lang, ownership::unified, multiplicity::optional,
          basis::cpp_lang, ownership::unified, multiplicity::optional> : implicit_enabled {};
+
+template <class YM>
+struct
+property<copy_construction,
+         basis::cpp_lang, ownership::unified, multiplicity::optional,
+         basis::cpp_lang, ownership::unique, YM> : explicit_enabled {};
 // ----- copy construction & assignment ----------------------------------------
 
 // ----- move construction & assignment ----------------------------------------

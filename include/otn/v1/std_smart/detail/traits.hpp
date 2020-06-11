@@ -31,6 +31,7 @@
 #include <otn/v1/deleter/traits.hpp>
 #include <otn/v1/lifetime/traits.hpp>
 #include <otn/v1/lifetime/detector.hpp>
+#include <otn/v1/layout/traits.hpp>
 #include <otn/v1/referrer/traits.hpp>
 #include <otn/v1/base/traits.hpp>
 
@@ -70,6 +71,10 @@ template <class T, class D>
 struct deleter<std_smart::unique_optional<T, D>>
 { using type = D; };
 
+template <class T, class D>
+struct layout<std_smart::unique_optional<T, D>>
+{ using type = otn::layout::divided; };
+
 // shared_optional
 template <class T>
 struct element<std_smart::shared_optional<T>>
@@ -90,6 +95,10 @@ struct multiplicity<std_smart::shared_optional<T>>
 template <class T>
 struct deleter<std_smart::shared_optional<T>>
 { using type = otn::deleter::by_default; };
+
+template <class T>
+struct layout<std_smart::shared_optional<T>>
+{ using type = otn::layout::divided; };
 
 // weak_optional
 template <class T>
@@ -120,6 +129,10 @@ struct role<Token,
 };
 
 } // namespace lifetime
+
+template <class T>
+struct layout<std_smart::weak_optional<T>>
+{ using type = otn::layout::divided; };
 
 } // namespace traits
 

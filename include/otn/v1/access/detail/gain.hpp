@@ -35,15 +35,9 @@ inline namespace v1
 {
 
 template <class ... Tokens>
-inline
+[[nodiscard]] inline
 auto gain(Tokens&& ... tokens) noexcept
-{
-    using namespace std;
-
-    return proxy::list<Tokens...>{
-        tuple<decltype(proxy::make(std::forward<Tokens>(tokens)))...>
-        {proxy::make(std::forward<Tokens>(tokens))...}};
-}
+{ return proxy::list<Tokens...>{std::forward<Tokens>(tokens)...}; }
 
 } // namespace v1
 

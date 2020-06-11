@@ -25,3 +25,4 @@
 #pragma once
 
 #include <otn/v1/proxy/detail/range_access.hpp>
+#include <otn/v1/proxy/detail/tuple_access.hpp>

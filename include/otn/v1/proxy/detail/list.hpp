@@ -60,13 +60,10 @@ constexpr bool is_all_true(const std::tuple<Booleans...>& values,
 
 } // namespace internal
 
-template <class ... Tokens>
-class list
+template <template <class ... Tokens> class List, class ... Tokens>
+class values
 {
 protected:
-    static constexpr std::size_t proxies_count = sizeof... (Tokens);
-    static_assert(proxies_count > 0, "proxy::list is not empty");
-
     using proxies_type =
         std::tuple<decltype(proxy::make(std::declval<Tokens>()))...>;
 
@@ -74,78 +71,113 @@ protected:
     using content_type =
         typename std::pointer_traits<
             otn::remove_cvref_t<
-                std::tuple_element_t<Index, proxies_type>>>::element_type&;
+                std::tuple_element_t<Index, proxies_type>>>::element_type;
 
 public:
-    explicit list(proxies_type proxies) noexcept
-        : m_proxies{std::move(proxies)}
+    template <std::size_t Index>
+    content_type<Index>&
+    get() noexcept
+    {
+        return otn::internal::to_value(
+            static_cast<List<Tokens...>&>(*this).template get<Index>());
+    }
+
+    template <std::size_t Index>
+    const content_type<Index>&
+    get() const noexcept
+    {
+        return otn::internal::to_value(
+            static_cast<const List<Tokens...>&>(*this).template get<Index>());
+    }
+};
+
+template <class ... Tokens>
+class list : public values<list, Tokens...>
+{
+private:
+    static constexpr std::size_t proxies_count = sizeof... (Tokens);
+    static_assert(proxies_count > 0, "proxy list is not empty");
+
+    using values = proxy::values<list, Tokens...>;
+    using typename values::proxies_type;
+
+public:
+    explicit list(Tokens ... tokens) noexcept
+        // TODO: Optimize for several tokens.
+        : m_proxies{proxy::make(std::forward<Tokens>(tokens))...}
     {}
 
     [[nodiscard]]
     operator bool() const & noexcept
     {
         return internal::is_all_true(
-            m_proxies, std::make_index_sequence<proxies_count>{});
+            (*this).m_proxies,
+            std::make_index_sequence<proxies_count>{});
     }
 
-    operator bool() const&& = delete;
+    operator bool() && = delete;
 
     template <std::size_t Index>
-    content_type<Index> get() const & noexcept
-    { return otn::internal::to_value(std::get<Index>(m_proxies)); }
+    std::tuple_element_t<Index, proxies_type>&
+    get() noexcept
+    { return std::get<Index>((*this).m_proxies); }
 
     template <std::size_t Index>
-    content_type<Index> get() const&& = delete;
+    const std::remove_reference_t<std::tuple_element_t<Index, proxies_type>>&
+    get() const noexcept
+    { return std::get<Index>((*this).m_proxies); }
 
+#ifdef __cpp_concepts
+    template <class Token>
+    requires(proxies_count == 1)
+#else
+    template <class Token,
+              OTN_CONCEPT_REQUIRES(proxies_count == 1)>
+#endif
+    operator Token() const noexcept { return Token{get<0>()}; }
+
+#ifdef __cpp_concepts
+    decltype (auto) operator*() noexcept
+    requires(proxies_count == 1)
+#else
     OTN_CONCEPT_REQUIRES_(proxies_count == 1)
-    content_type<0> operator*() const & noexcept
-    { return get<0>(); }
+    decltype (auto) operator*() noexcept
+#endif
+    { return values::template get<0>(); }
 
+#ifdef __cpp_concepts
+    decltype (auto) operator*() const noexcept
+    requires(proxies_count == 1)
+#else
+    OTN_CONCEPT_REQUIRES_(proxies_count == 1)
+    decltype (auto) operator*() const noexcept
+#endif
+    { return values::template get<0>(); }
+
+#ifdef __cpp_concepts
+    values& operator*() noexcept
+    requires(proxies_count > 1)
+#else
     OTN_CONCEPT_REQUIRES_(proxies_count > 1)
-    content_type<0> operator*() = delete;
-    content_type<0> operator*() const&& = delete;
+    values & operator*() noexcept
+#endif
+    { return *this; }
+
+#ifdef __cpp_concepts
+    const values& operator*() const noexcept
+    requires(proxies_count > 1)
+#else
+    OTN_CONCEPT_REQUIRES_(proxies_count > 1)
+    const values& operator*() const noexcept
+#endif
+    { return *this; }
 
 private:
-    const proxies_type m_proxies;
+    proxies_type m_proxies;
 };
-
-template <std::size_t Index, typename ... Tokens>
-constexpr std::tuple_element_t<Index, list<Tokens...>>
-get(const list<Tokens...>& proxy_list) noexcept
-{ return proxy_list.template get<Index>(); }
-
-template <std::size_t Index, typename ... Tokens>
-constexpr std::tuple_element_t<Index, list<Tokens...>>
-get(list<Tokens...>&& proxy_list) = delete;
 
 } // namespace proxy
 
 } // namespace v1
 
 } // namespace otn
-
-namespace std
-{
-
-template <class ... Tokens>
-struct tuple_size<otn::proxy::list<Tokens...>>
-    : std::integral_constant<std::size_t, sizeof...(Tokens)> {};
-
-template <std::size_t Index, class ... Tokens>
-struct tuple_element<Index, otn::proxy::list<Tokens...>>
-{
-    using proxy_list = otn::proxy::list<Tokens...>;
-    static_assert(Index < tuple_size<proxy_list>::value,
-                  "proxy::list index is in range");
-    using type = decltype(declval<const proxy_list&>().template get<Index>());
-};
-
-template <std::size_t Index, class ... Tokens>
-struct tuple_element<Index, const otn::proxy::list<Tokens...>>
-{
-    using proxy_list = otn::proxy::list<Tokens...>;
-    using type       =
-        decltype(as_const(declval<const proxy_list&>().template get<Index>()));
-};
-
-} // namespace std

@@ -51,3 +51,19 @@
 #else
 #define OTN_SINGLE_BOOL_DEPRECATION
 #endif
+
+#ifdef _MSC_VER
+#define OTN_SUPPRESS_DEPRECATIONS_BEGIN \
+    __pragma(warning( push )) \
+    __pragma(warning( disable : 4996 ))
+
+#define OTN_SUPPRESS_DEPRECATIONS_END \
+    __pragma(warning( pop ))
+#else // _MSC_VER
+#define OTN_SUPPRESS_DEPRECATIONS_BEGIN \
+    _Pragma("GCC diagnostic push") \
+    _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+
+#define OTN_SUPPRESS_DEPRECATIONS_END \
+    _Pragma("GCC diagnostic pop")
+#endif // _MSC_VER

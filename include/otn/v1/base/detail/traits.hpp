@@ -30,11 +30,12 @@
 #include <otn/v1/multiplicity/traits.hpp>
 #include <otn/v1/deleter/traits.hpp>
 #include <otn/v1/lifetime/traits.hpp>
+#include <otn/v1/layout/traits.hpp>
 #include <otn/v1/base/traits.hpp>
 #include <otn/v1/referrer/traits.hpp>
 
 #include <otn/v1/base/rules.hpp>
-#include <otn/v1/referrer/rules.hpp>
+#include <otn/v1/referrer/summaries.hpp>
 #include <otn/v1/lifetime/rules.hpp>
 #include <otn/v1/base/detail/concepts.hpp>
 
@@ -80,6 +81,18 @@ struct role<Token, std::enable_if_t<base::is_token_v<Token>>>
 };
 
 } // namespace lifetime
+
+template <class Token>
+struct layout<Token, std::enable_if_t<base::is_token_v<Token>>>
+{
+protected:
+    using referrer_summary = summaries::referrer<typename Token::element_type,
+                                                 typename Token::brief_spec>;
+    using referrer_type = typename referrer_summary::type;
+
+public:
+    using type = otn::traits::layout_t<referrer_type>;
+};
 
 } // namespace traits
 

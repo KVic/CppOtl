@@ -40,6 +40,14 @@ struct hash<otn::raw::unified_single<T>>
     : hash<otn::base::token<T, otn::spec::raw::unified_single>> {};
 
 template <class T>
+struct hash<otn::raw::unique_optional<T>>
+    : hash<otn::base::token<T, otn::spec::raw::unique_optional>> {};
+
+template <class T>
+struct hash<otn::raw::unique_single<T>>
+    : hash<otn::base::token<T, otn::spec::raw::unique_single>> {};
+
+template <class T>
 struct hash<otn::raw::weak_optional<T>>
     : hash<otn::base::token<T, otn::spec::raw::weak_optional>> {};
 

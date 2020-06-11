@@ -62,20 +62,6 @@ template <class T, class M, class D>
 struct specify<T, spec::brief<basis::safe, ownership::weak, M, D>, true>
 { using type = std_smart::weak_optional<T>; };
 
-template <>
-struct factory<basis::safe>
-{
-    template <class T, class BriefSpec, class ... Args>
-    static auto make(Args&& ... args)
-    {
-        return referrer::make<T, spec::brief<basis::std_smart,
-                                             ownership::shared,
-                                             typename BriefSpec::multiplicity,
-                                             typename BriefSpec::deleter>>(
-            std::forward<Args>(args) ...);
-    }
-};
-
 } // namespace referrer
 
 } // namespace v1

@@ -26,6 +26,8 @@
 
 #include <otn/v1/access/functions.hpp>
 
+#include <otn/v1/config/deprecations.hpp>
+
 #include <tuple>
 
 namespace otn
@@ -36,6 +38,8 @@ inline namespace v1
 
 namespace internal
 {
+
+OTN_SUPPRESS_DEPRECATIONS_BEGIN
 
 template <class ... Args, std::size_t ... Indices>
 inline
@@ -58,7 +62,7 @@ auto access_if(const std::tuple<Args ...>& args,
     if (locs)
         // The last argument is a success_handler function.
         // Call: success_handler(*tokens...);
-        return get<last_index>(args)(locs.template get<Indices>()...);
+        return get<last_index>(args)(*locs.template get<Indices>()...);
 }
 
 template <class ... Args, std::size_t ... Indices>
@@ -84,12 +88,14 @@ auto access_if_else(const std::tuple<Args ...>& args,
     if (locs)
         // The penultimate argument is a success_handler function.
         // Call: success_handler(*tokens...);
-        return get<last_index - 1>(args)(locs.template get<Indices>()...);
+        return get<last_index - 1>(args)(*locs.template get<Indices>()...);
     else
         // The last argument is a failure_handler function.
         // Call: failure_handler();
         return get<last_index>(args)();
 }
+
+OTN_SUPPRESS_DEPRECATIONS_END
 
 } // namespace internal
 
@@ -104,10 +110,10 @@ auto access(Args&& ... args)
 
     using args_t = tuple<Args && ...>;
     if constexpr (std::is_invocable_v<tuple_element_t<args_count - 1, args_t>>)
-        return access_if_else(forward_as_tuple(args ...),
+        return access_if_else(forward_as_tuple(forward<Args>(args) ...),
                               make_index_sequence<args_count - 2>{});
     else
-        return access_if(forward_as_tuple(args ...),
+        return access_if(forward_as_tuple(forward<Args>(args) ...),
                          make_index_sequence<args_count - 1>{});
 }
 

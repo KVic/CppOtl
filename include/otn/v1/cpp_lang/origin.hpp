@@ -26,3 +26,5 @@
 
 #include <otn/v1/cpp_lang/unified_unknown.hpp>
 #include <otn/v1/cpp_lang/unified_optional.hpp>
+#include <otn/v1/cpp_lang/thin_optional.hpp>
+#include <otn/v1/cpp_lang/thin_single.hpp>

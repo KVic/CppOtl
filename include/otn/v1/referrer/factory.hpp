@@ -37,22 +37,22 @@ namespace referrer
 
 // T - Type
 
-template <class Basis>
+template <class Referrer>
 struct factory
 {
-    template <class T, class BriefSpec, class ... Args>
-    static auto make(Args&& ...)
+    template <class T, class ... Args>
+    static Referrer make(Args&& ...)
     {
-        static_assert(sizeof(Basis) == -1,
-                      "referrer::factory is defined for the Basis");
+        static_assert(sizeof(Referrer) == -1,
+                      "referrer::factory is defined for the Referrer");
     }
 };
 
-template <class T, class BriefSpec, class ... Args>
-inline auto make(Args&& ... args)
+template <class Referrer, class T, class ... Args>
+inline constexpr Referrer make(Args&& ... args) noexcept(
+    factory<Referrer>::template is_nothrow_constructible<T, Args...>)
 {
-    return factory<typename BriefSpec::basis>::template make<T, BriefSpec>(
-        std::forward<Args>(args) ...);
+    return factory<Referrer>::template make<T>(std::forward<Args>(args) ...);
 }
 
 } // namespace referrer

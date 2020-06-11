@@ -28,5 +28,7 @@
 #include <otn/v1/raw/detail/swap.hpp>
 #include <otn/v1/raw/detail/range_access.hpp>
 #include <otn/v1/raw/detail/pointer_traits.hpp>
+#include <otn/v1/raw/detail/base.hpp>
 #include <otn/v1/raw/detail/conversion.hpp>
 #include <otn/v1/raw/detail/concrete.hpp>
+#include <otn/v1/raw/detail/factory.hpp>
